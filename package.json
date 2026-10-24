@@ -8,6 +8,7 @@
     "render": "remotion render LifeKline out/libai-remotion.mp4",
     "still": "remotion still LifeKline",
     "gen": "node tools/generate-script.mjs",
+    "produce": "node tools/produce.mjs",
     "music": "node tools/generate-music.mjs",
     "voice": "node tools/make-voice.mjs",
     "mix": "node tools/mix-audio.mjs"

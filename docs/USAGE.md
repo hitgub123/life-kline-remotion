@@ -33,7 +33,25 @@ npx remotion render Newton out/newton.mp4
 ffmpeg -i out/newton.mp4 -f lavfi -i anullsrc=r=44100:cl=stereo -c:v copy -c:a aac -shortest out/newton-final.mp4
 ```
 
-当前仓库已注册两个 Composition：`LifeKline`（李白）和 `Newton`（牛顿）。
+当前仓库已注册的 Composition 见 `src/data/registry.ts`（李白、牛顿、苏轼、辛弃疾等）。
+
+## 交互方式与一键生产
+
+日常使用不需要敲命令：对 agent（Muse）说「做一个某某」即可，agent 会调用下面这条一键命令并把成片和生产小结交回来。命令本身是给 agent 和调试用的：
+
+```bash
+node tools/produce.mjs "辛弃疾" --id XinQiji                  # 取材→生成→审查→渲染→配音 全自动
+node tools/produce.mjs "辛弃疾" --id XinQiji --bgm 曲子.mp3   # 手头已有曲子时连合成一起做完
+```
+
+produce 的六步各自可单独跑、产物存在就跳过、失败重跑自动续上：
+
+1. **取材** `tools/fetch-person.mjs`：从维基百科抓人物资料存到 `src/data/people/<id>.md`
+2. **生成** `tools/generate-script.mjs`：LLM 读目录选模板/音色/BGM 风格，并以人物资料为事实依据写脚本
+3. **审查** `tools/fact-check.mjs`：另一个模型对照资料核查年份与引句，自动修正并出报告 `<id>.review.md`
+4. **渲染** Remotion 出无声视频
+5. **配音** `tools/make-voice.mjs`：按脚本选定的音色生成头尾配音轨
+6. **合成** `tools/mix-audio.mjs`：混入 BGM 与配音（BGM 后补也可，一条命令几秒，不用重渲）
 
 ## 新增一个人物：完整流程
 
@@ -161,7 +179,7 @@ node tools/generate-script.mjs "苏轼" --id SuShi --dry-run    # 只打印提�
 
 它会把字段规范和李白样例作为提示词发给模型，拿回 JSON 后做结构校验（关键点递增、分段首尾相接、标题行宽、总时长），通过了才落到 `src/data/` 并自动注册进 `src/data/registry.ts`，之后就能直接 still 和 render。也可以 `--from-file 输出.txt` 把别的渠道拿到的文本当模型输出导入。
 
-红线不变：模型写的年份和引文必须人工再核查一遍，校验只查结构，查不了史实。渲染分层也不变，渲染本身依旧离线、确定性、不需要 key。
+红线不变：模型写的年份和引文必须核查——现在由 tools/fact-check.mjs 用另一个模型对照维基人物资料自动完成（见上方一键生产第 3 步），校验本身只查结构，查不了史实。渲染分层也不变，渲染本身依旧离线、确定性、不需要 key。
 
 ## 进阶：BGM
 
@@ -183,13 +201,13 @@ BGM 会自动循环铺满全片、结尾 2 秒淡出。音量默认 0.6，可用
 
 ## 模板与风格架构
 
-一套视频的「表现」由三样东西决定，全部写在脚本 JSON 里，生成器按人物气质自动选，人工也可改：
+一套视频的「表现」由三样东西决定，全部写在脚本 JSON 里，生成器按人物气质自动选，人工也可改。三套目录都是单一数据源（文档与工具读同一份，加新条目不用改代码）：
 
-- **视频模板** `template`：渲染组件。注册表在 `src/data/templates.ts`（每套含组件、适合人物、默认风格三件套），Root 按脚本的 `template` 字段选组件渲染。目前只有 `classic`（宣纸杂志风）。新增模板：写一个吃 `scriptData` 的组件，在 templates.ts 里注册一行，生成器那边的模板清单（tools/generate-script.mjs 里的 TEMPLATE_LINES）同步加一行。
+- **视频模板** `template`：元数据目录在 `src/data/templates.json`（名称、适合人物、默认风格），组件注册在 `src/data/templates.ts`，Root 按脚本的 `template` 字段选组件渲染。目前只有 `classic`（宣纸杂志风）。新增模板：写一个吃 `scriptData` 的组件，在 templates.ts 里注册一行，并在 templates.json 里加一项元数据。
 - **配音音色** `voice.style`：音色库在 `tools/voice-profiles.json`，一项 = 引擎 + 音色 id + 可选语气指令。现有三类引擎：`edge`（本机免费音色库，云扬/云健/云希/晓晓/晓菡）、`gemini`（用文字描述定制音色与语气，如沧桑老者、纪录片旁白，需 GEMINI_API_KEY）、`elevenlabs`（音色库与声音克隆，需 ELEVENLABS_API_KEY；克隆好把 voice_id 填进 my-clone 那项即可）。make-voice 按 `--style` > 脚本 `voice.style` > 库里 default 的顺序选。
-- **BGM 风格** `bgm_tags`：一句英文风格标签（曲风+情绪+乐器），music-prompt 和 generate-music 会带上它生成/取曲。
+- **BGM 风格** `bgm_style`：风格目录在 `tools/bgm-styles.json`（电影钢琴、古风史诗、爵士夜色等），脚本只写 id，工具按目录的 tags 生成音乐提示词；`bgm_tags` 是工具落盘时自动展开的英文标签。
 
-生成器（generate-script）的校验会兜底：template 和 voice.style 写了不存在的值会被自动改回默认并警告。
+另有一份**人物资料**（与目录无关，是事实来源）：`src/data/people/<id>.md`，由 fetch-person 从维基百科抓取，生成时喂给模型、审查时作对照。生成器（generate-script）的校验会兜底：template、voice.style、bgm_style 写了不存在的值会被自动改回默认并警告。
 
 ## 进阶：配音（头尾两句式）
 

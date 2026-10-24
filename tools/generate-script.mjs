@@ -11,7 +11,9 @@
  *
  * 做什么: 按 docs/USAGE.md 的字段规范让 LLM 生成人物脚本 JSON，做结构校验后
  * 落到 src/data/<id 小写>.json，并自动注册进 src/data/registry.ts。
- * 注意: 模型写的年份和引文必须人工再核查一遍，校验只查结构，查不了史实。
+ * 若 src/data/people/<id 小写>.md 存在（tools/fetch-person.mjs 从维基抓的人物
+ * 资料），会作为事实依据一并喂给模型；生成后建议跑 tools/fact-check.mjs 让
+ * 另一个模型对照资料核查修正。结构校验查不了史实。
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -45,11 +47,21 @@ if (!/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
 }
 
 // ---------- 提示词 ----------
+// 目录单一数据源：模板读 src/data/templates.json，音色读 tools/voice-profiles.json，
+// BGM 风格读 tools/bgm-styles.json。以后加模板/音色/风格只改目录文件，不改本工具。
 const example = readFileSync(join(ROOT, "src/data/libai.json"), "utf8");
-// 与 src/data/templates.ts 同步：新增模板时两边都要加
-const TEMPLATE_LINES = `- classic 经典款·宣纸杂志风：适合古代人物、文人、科学家、通用（目前只有这一套，拿不准就用它）`;
+const TEMPLATE_CATALOG = JSON.parse(readFileSync(join(ROOT, "src/data/templates.json"), "utf8"));
+const TEMPLATE_LINES = TEMPLATE_CATALOG.templates
+  .map((t) => `- ${t.id} ${t.name}：适合${t.suitableFor.join("、")}`)
+  .join("\n");
+const TEMPLATE_IDS = TEMPLATE_CATALOG.templates.map((t) => t.id);
+const TEMPLATE_DEFAULTS = Object.fromEntries(TEMPLATE_CATALOG.templates.map((t) => [t.id, t.defaults]));
 const VOICE_PROFILES = JSON.parse(readFileSync(join(ROOT, "tools/voice-profiles.json"), "utf8"));
 const VOICE_STYLE_LINES = Object.entries(VOICE_PROFILES.styles)
+  .map(([id, p]) => `- ${id} ${p.label}：${p.note}`)
+  .join("\n");
+const BGM_STYLES = JSON.parse(readFileSync(join(ROOT, "tools/bgm-styles.json"), "utf8"));
+const BGM_STYLE_LINES = Object.entries(BGM_STYLES.styles)
   .map(([id, p]) => `- ${id} ${p.label}：${p.note}`)
   .join("\n");
 
@@ -65,13 +77,16 @@ const SPEC = `你在为「人生K线」短视频写脚本。视频把一个人�
 - quote: 底部白字，人物本人最有名的一句作品原文或名言，必须真实存在并核对出处；没有合适的就写 null，绝不编造。不超过15个汉字。
 - voice: { intro, outro, style } 头尾配音文案与音色。intro: 一句钩子式介绍，必须点名人物，不超过24个汉字；outro: 结尾的总结与升华，40-70个汉字，不得复述 quote 原文，语气克制。style: 从下方音色清单里按人物气质选一个 id。
 - template: 从下方模板清单里按人物选一个 id。
-- bgm_tags: 一句英文，给音乐生成模型看的风格标签：曲风 + 情绪 + 主要乐器，与人物气质匹配（如 "epic orchestral, heroic brass, war drums" 配武将，"jazz piano trio, melancholic" 配民国文人）。
+- bgm_style: 从下方 BGM 风格清单里按人物气质选一个 id（不要自己编风格描述，工具会按清单生成音乐标签）。
 
 模板清单：
 ${TEMPLATE_LINES}
 
 音色清单：
 ${VOICE_STYLE_LINES}
+
+BGM 风格清单：
+${BGM_STYLE_LINES}
 - 去世那一段加 "stamp": true；最后一段加 "rocket": true 且 candles 为 0。
 
 只输出 JSON 本体，不要解释，不要 markdown 代码块。
@@ -82,6 +97,15 @@ ${example}
 任务：为「${name}」写脚本。先在心里核对他/她的关键事件与年份，再落成 JSON。`;
 
 function buildPrompt() {
+  const dossierPath = join(ROOT, "src/data/people", id.toLowerCase() + ".md");
+  if (existsSync(dossierPath)) {
+    const text = readFileSync(dossierPath, "utf8").slice(0, 6000);
+    return (
+      SPEC +
+      `\n\n事实依据（该人物的维基百科资料摘录）：事件与年份以此为准；摘录未覆盖的内容可谨慎使用公认史实，但不得编造具体年份与引句。\n${text}`
+    );
+  }
+  console.warn(`⚠ 没有 ${name} 的人物资料（src/data/people/${id.toLowerCase()}.md），纯凭模型记忆生成，史实错误风险高。建议先跑 tools/fetch-person.mjs 抓维基资料。`);
   return SPEC;
 }
 
@@ -183,7 +207,7 @@ function validate(d) {
       if (d.voice.outro && (textWidth(d.voice.outro) < 36 || textWidth(d.voice.outro) > 78))
         warns.push("voice.outro 宜在 40-70 字之间");
     }
-    if (!d.bgm_tags) warns.push("缺 bgm_tags，音乐提示词将用模板默认风格");
+    if (!d.bgm_style) warns.push("缺 bgm_style，工具将用模板默认风格");
     const total = (d.hook_dur || 0) + d.segments.reduce((a, s) => a + s.dur, 0);
     if (total < 55 || total > 80) warns.push(`总时长 ${total.toFixed(1)} 秒，不在 55-80 区间`);
   }
@@ -231,10 +255,14 @@ try {
 }
 data.seed = 42;
 data.hook_dur = 3.5;
-if (data.bpm == null) data.bpm = 120;
-if (data.template !== "classic") data.template = "classic"; // 目前只有 classic，新增模板时放开
+if (!TEMPLATE_IDS.includes(data.template)) data.template = TEMPLATE_IDS[0];
+const tdef = TEMPLATE_DEFAULTS[data.template] || {};
+if (data.bpm == null) data.bpm = tdef.bpm ?? 120;
 if (data.voice && !Object.hasOwn(VOICE_PROFILES.styles, data.voice.style || ""))
-  data.voice.style = VOICE_PROFILES.default || "yunyang";
+  data.voice.style = tdef.voiceStyle || VOICE_PROFILES.default || "yunyang";
+if (!Object.hasOwn(BGM_STYLES.styles, data.bgm_style || ""))
+  data.bgm_style = tdef.bgmStyle || BGM_STYLES.default;
+data.bgm_tags = BGM_STYLES.styles[data.bgm_style].tags;
 const { errors, warns } = validate(data);
 for (const w of warns) console.warn("⚠", w);
 if (errors.length) {
@@ -256,4 +284,4 @@ console.log(`
 下一步:
   抽帧检查: npx remotion still ${id} out/check.png --frame=1020
   渲染全片: npx remotion render ${id} out/${fileBase}.mp4
-⚠ 渲染前请人工核查一遍脚本里的事件年份与 quote 出处，模型会写错。`);
+⚠ 渲染前请跑 tools/fact-check.mjs 让另一个模型对照人物资料核查年份与 quote，模型会写错。`);

@@ -26,7 +26,9 @@ export interface ScriptData {
   seed: number;
   bpm?: number;
   template?: string;
+  bgm_style?: string;
   bgm_tags?: string;
+  factcheck?: { by: string; at: string; verdict: string; issues: number; source?: string };
   voice?: { intro?: string; outro?: string; style?: string };
   keypoints: [number, number, string | null][];
   segments: Segment[];

@@ -1,0 +1,1 @@
+{"_readme":"视频模板目录（元数据单一数据源）: 工具(生成器/文档)都读这份。组件本体在 src/data/templates.ts 按 id 注册。新增模板: 往这里加一项 + 在 templates.ts 注册组件，生成器清单自动更新，不用改工具代码。","templates":[{"defaults":{"bgmStyle":"cinematic-piano","bpm":120,"voiceStyle":"yunyang"},"id":"classic","name":"经典款 · 宣纸杂志风","suitableFor":["古代人物","文人","科学家","通用"]}]}
