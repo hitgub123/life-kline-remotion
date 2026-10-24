@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   AbsoluteFill,
+  Audio,
   Img,
   continueRender,
   delayRender,
@@ -195,6 +196,7 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#EDE5D3" }}>
+      {DATA.bgm ? <Audio src={staticFile(DATA.bgm)} loop /> : null}
       <Img
         src={staticFile("paper.png")}
         style={{ position: "absolute", width: 1080, height: 1920 }}

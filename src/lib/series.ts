@@ -26,6 +26,7 @@ export interface ScriptData {
   seed: number;
   keypoints: [number, number, string | null][];
   segments: Segment[];
+  bgm?: string;
 }
 
 export interface Candle {

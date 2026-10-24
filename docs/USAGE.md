@@ -120,14 +120,26 @@ K 线本体不用写。渲染器在关键点之间用布朗桥自动填充带噪
 
 ## 进阶：脚本自动生成
 
-渲染部分不含脚本生成，这是刻意的分层：渲染保持离线、确定性、不需要任何 key；脚本生成需要调 LLM 且必须过事实核查。想一站式自动化，就在仓库加一个 tools 脚本：读人物名，带上本文档「第 1 步，写脚本」的字段规范作为提示词，调用 LLM API（Gemini Flash 或 DeepSeek 都行，key 从环境变量读，不要写进仓库），把输出的 JSON 落到 `src/data/`。生成后仍要逐项核查年份与引文，核查不过不要渲染，LLM 写错年份是常态不是例外。
+仓库带了生成工具 `tools/generate-script.mjs`，把「写脚本 + 注册」一步做完：
+
+```bash
+# 需要先设好 key（二选一），key 只走环境变量，不要写进任何文件
+export GEMINI_API_KEY=你的key        # 或 DEEPSEEK_API_KEY
+node tools/generate-script.mjs "苏轼" --id SuShi              # 默认 Gemini
+node tools/generate-script.mjs "苏轼" --id SuShi --provider deepseek
+node tools/generate-script.mjs "苏轼" --id SuShi --dry-run    # 只打印提示词，不调 API
+```
+
+它会把字段规范和李白样例作为提示词发给模型，拿回 JSON 后做结构校验（关键点递增、分段首尾相接、标题行宽、总时长），通过了才落到 `src/data/` 并自动注册进 `src/data/registry.ts`，之后就能直接 still 和 render。也可以 `--from-file 输出.txt` 把别的渠道拿到的文本当模型输出导入。
+
+红线不变：模型写的年份和引文必须人工再核查一遍，校验只查结构，查不了史实。渲染分层也不变，渲染本身依旧离线、确定性、不需要 key。
 
 ## 进阶：BGM
 
 三条路，按省事程度排：
 
 1. 发布时用平台曲库。当前默认做法，成片自带静音轨占位，发布时在平台里选曲，零版权风险
-2. 自备音乐文件。把 mp3 放进 `public/`，在脚本顶层加一个字段 `"bgm": "文件名.mp3"`，渲染时整段铺上。免版权曲库可以看 Pixabay Music、Uppbeat，下载时留好授权说明
+2. 自备音乐文件。把 mp3 放进 `public/`，在脚本顶层加一个字段 `"bgm": "文件名.mp3"`，组件已支持，渲染时会自动整段循环铺上。免版权曲库可以看 Pixabay Music、Uppbeat，下载时留好授权说明
 3. AI 作曲。Suno 等生成 60 到 70 秒纯音乐，导出 mp3 后按第 2 条挂上。商用授权以平台条款为准
 
 ## 进阶：配音
