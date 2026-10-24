@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "render": "remotion render LifeKline out/libai-remotion.mp4",
     "still": "remotion still LifeKline",
-    "gen": "node tools/generate-script.mjs"
+    "gen": "node tools/generate-script.mjs",
+    "mix": "node tools/mix-audio.mjs"
   },
   "keywords": [],
   "author": "",
