@@ -10,6 +10,9 @@
  * 选项:
  *   --bgm-volume  BGM 音量，默认 0.15（有配音时是垫底音量；只有 BGM 时建议 0.5-0.8）
  *   --voice-volume 配音音量，默认 1
+ *   --bgm-offset  BGM 时间偏移秒数，可负。生成音乐的第一拍常不在 0 秒，
+ *                 用它把第一拍平移到视频 0 秒，拍点才能和蜡烛网格对齐
+ *   --voice-offset 配音时间偏移秒数，可负，默认 0
  *   --out         输出文件，默认在视频名后加 -mixed
  *
  * 行为: BGM 自动循环铺满全片，结尾 2 秒淡出；配音按整条音轨贴入（分段配音请先
@@ -28,6 +31,8 @@ const bgm = flag("bgm", null);
 const voice = flag("voice", null);
 const bgmVol = parseFloat(flag("bgm-volume", voice ? "0.15" : "0.6"));
 const voiceVol = parseFloat(flag("voice-volume", "1"));
+const bgmOffset = parseFloat(flag("bgm-offset", "0"));
+const voiceOffset = parseFloat(flag("voice-offset", "0"));
 const out = flag("out", null) || (video ? video.replace(/\.mp4$/i, "") + "-mixed.mp4" : null);
 
 if (!video || (!bgm && !voice)) {
@@ -50,19 +55,30 @@ const ff = ["-y", "-i", video];
 if (bgm) ff.push("-stream_loop", "-1", "-i", bgm);
 if (voice) ff.push("-i", voice);
 
+// 把偏移拆成裁剪（负偏移）和延迟（正偏移）两段滤镜
+function offsetFilters(offset) {
+  const trim = offset < 0 ? `atrim=start=${(-offset).toFixed(3)},` : "";
+  const delay =
+    offset > 0 ? `adelay=${Math.round(offset * 1000)}|${Math.round(offset * 1000)},` : "";
+  return { trim, delay };
+}
+
 const filters = [];
 let bgmLabel = null;
 let voiceLabel = null;
 if (bgm) {
   const idx = 1;
+  const { trim, delay } = offsetFilters(bgmOffset);
+  const start = bgmOffset < 0 ? -bgmOffset : 0;
   filters.push(
-    `[${idx}:a]atrim=0:${dur.toFixed(3)},asetpts=N/SR/TB,volume=${bgmVol},afade=t=out:st=${Math.max(0, dur - 2).toFixed(3)}:d=2[bgm]`
+    `[${idx}:a]atrim=start=${start.toFixed(3)}:end=${(start + dur).toFixed(3)},asetpts=N/SR/TB,${delay}volume=${bgmVol},afade=t=out:st=${Math.max(0, dur - 2).toFixed(3)}:d=2[bgm]`
   );
   bgmLabel = "[bgm]";
 }
 if (voice) {
   const idx = bgm ? 2 : 1;
-  filters.push(`[${idx}:a]volume=${voiceVol},apad[voice]`);
+  const { trim, delay } = offsetFilters(voiceOffset);
+  filters.push(`[${idx}:a]${trim}asetpts=N/SR/TB,${delay}volume=${voiceVol},apad[voice]`);
   voiceLabel = "[voice]";
 }
 let aout;

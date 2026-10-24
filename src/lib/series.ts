@@ -24,6 +24,7 @@ export interface ScriptData {
   };
   hook_dur: number;
   seed: number;
+  bpm?: number;
   keypoints: [number, number, string | null][];
   segments: Segment[];
   bgm?: string;
@@ -168,8 +169,11 @@ export function buildSeries(data: ScriptData): BuiltSeries {
         });
       }
     }
+    // 蜡烛出现时刻吸附到半拍网格，让跳动和音乐拍点对齐（bpm 缺省 120，半拍 0.25 秒）
+    const grid = 30 / (data.bpm ?? 120);
     ids.forEach((ci, j) => {
-      candles[ci].appear = segStarts[si] + 0.25 + (j * (seg.dur * 0.7)) / Math.max(ids.length, 1);
+      const raw = segStarts[si] + 0.25 + (j * (seg.dur * 0.7)) / Math.max(ids.length, 1);
+      candles[ci].appear = Math.round(raw / grid) * grid;
     });
     cum.push(candles.length);
   });

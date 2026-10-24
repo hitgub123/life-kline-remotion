@@ -51,6 +51,7 @@ const SPEC = `你在为「人生K线」短视频写脚本。视频把一个人�
 字段规范：
 - subject: { name 人名, title 固定"人生K线图", birth_year 出生年(公历整数), stock_label 片头副标(自编，如"唐宋八大家股份 · 代码 1037"), series 固定"人生切片" }
 - hook_dur: 3.5，seed: 42，都不要改
+- bpm: 120，写在顶层。渲染器按半拍网格（120 BPM 时 0.25 秒）安排蜡烛出现时刻，音乐也会按 120 BPM 生成来卡点，所以每段 dur 必须是 0.5 的整数倍（6、6.5、7 这类），保证段界落在拍点上
 - keypoints: [[年龄, 指数, 标注或null], ...]，10到13个。指数是"人生股价"：开局8-10，全片巅峰45-50，谷底3-6，落差要大。标注只给最重要的节点，2-5个字。年龄口径：画面年份 = birth_year + 年龄 - 1，先定事件年份再反推年龄，两者必须对齐；事件年份必须符合史实，不要凭印象编。
 - segments: 约10段，每段 { id: "s1"起顺排, dur: 6-7秒, kp: [from,to]关键点下标(从0起，相邻段首尾相接，第一段从0开始，最后一段kp是[末点,末点]), candles: 10-30, vol: 0.06-0.18(动荡段大、平稳段小), shape: 1(冲顶段1.5-1.7), headline, quote, stamp?, rocket? }
 - headline: 大标题叙事句。结构是"行的数组，每行是[文本, 是否标红0或1]片段的数组"。一句白话叙事，有戏的词或股市词标红。每行片段文本合计不超过10个汉字(数字字母算半个)，超了会溢出画面，长句拆两行。
@@ -153,6 +154,7 @@ function validate(d) {
     if (!last.rocket) warns.push("最后一段没有 rocket: true");
     if (!d.segments.some((s) => s.stamp)) warns.push("没有带 stamp 的段（去世段应有退市印章）");
     for (const s of d.segments) {
+      if ((s.dur * 2) % 1 !== 0) warns.push(`段 ${s.id} 的 dur ${s.dur} 不是 0.5 的整数倍，段界会脱离拍点网格`);
       for (const line of s.headline || []) {
         const w = line.reduce((acc, run) => acc + textWidth(run[0]), 0);
         if (w > 10.5) warns.push(`段 ${s.id} 有一行标题宽 ${w.toFixed(1)}，超过 10 会溢出`);
@@ -206,6 +208,7 @@ try {
 }
 data.seed = 42;
 data.hook_dur = 3.5;
+if (data.bpm == null) data.bpm = 120;
 const { errors, warns } = validate(data);
 for (const w of warns) console.warn("⚠", w);
 if (errors.length) {

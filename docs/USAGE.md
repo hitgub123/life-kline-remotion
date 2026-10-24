@@ -98,6 +98,35 @@ K 线本体不用写。渲染器在关键点之间用布朗桥自动填充带噪
 
 抽帧没问题后跑 `npx remotion render <id> out/<名字>.mp4`，约 5 分钟。需要发布的话按命令速查补静音轨。
 
+## 进阶：音乐卡点
+
+视频和音乐共用一张拍点网格，做到段落级对齐：
+
+- 脚本顶层有 `bpm`（缺省 120）。渲染器按半拍（120 BPM 时 0.25 秒）网格安排每根蜡烛的出现时刻，蜡烛跳动天然合拍
+- 每段 `dur` 必须是 0.5 的整数倍，段界才会落在拍点上。生成工具会对此报警
+- 音乐按同一个 BPM 生成。用 `tools/music-prompt.mjs` 从脚本生成提示词，它会算好段界时间并写成时间标记（高潮落在巅峰段开始、安静段落在谷底段、结尾前收住再扬起）：
+
+```bash
+node tools/music-prompt.mjs src/data/newton.json                 # 纯音乐
+node tools/music-prompt.mjs src/data/newton.json --mode vocal    # 带人声
+```
+
+- 生成不用开网页：`tools/generate-music.mjs` 直接调 Flow Music 背后的同一个模型（Lyria 3.5，Gemini API），提示词由上一步自动拼好：
+
+```bash
+GEMINI_API_KEY=xxx node tools/generate-music.mjs --script src/data/newton.json --mode vocal --takes 3
+```
+
+曲子落在 `assets/bgm/`，带人声的会同时存一份歌词 `.lyrics.txt`。费用约 $0.08 一首、没有免费层，key 必须来自开了付费的 Google Cloud 项目，AI Pro 订阅额度不能抵 API 的账。API 是单轮生成，没有网页版「只改副歌」那种迭代编辑，不满意就改提示词重生一首。提示词也可以粘进 Flow Music 网页手动生成，效果一样。
+
+- 生成的曲子第一拍常常不在 0 秒。合成时用 `--bgm-offset` 把第一拍平移到 0 秒（数值是第一拍出现秒数的相反数），之后全程对齐：
+
+```bash
+node tools/mix-audio.mjs out/newton.mp4 --bgm 曲库/某首.mp3 --bgm-offset -0.24
+```
+
+- 既有曲子速度不在网格上时，可以反过来让视频迁就音乐：把脚本 `bpm` 设成曲子的速度（例如 80.6 对应 0.372 秒的脉冲），蜡烛会吸附到曲子的网格上。生成的曲子速度不稳时只能近似对齐，重新按 BPM 生成才是精确解
+
 ## 给 AI 助手的操作说明
 
 如果你是 AI 助手，被要求「生成某个人的视频」，按这个顺序做：
