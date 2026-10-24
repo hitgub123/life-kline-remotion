@@ -175,26 +175,26 @@ node tools/generate-script.mjs "苏轼" --id SuShi --dry-run    # 只打印提�
 node tools/mix-audio.mjs out/newton.mp4 --bgm ~/音乐/曲库/某首.mp3
 ```
 
-BGM 会自动循环铺满全片、结尾 2 秒淡出。只有 BGM 时音量默认 0.6，同时带配音时默认 0.15 垫底，都可以用 `--bgm-volume` 改。不满意就换 `--bgm` 的文件重跑，几秒出一个新版本。
+BGM 会自动循环铺满全片、结尾 2 秒淡出。音量默认 0.6，可用 `--bgm-volume` 改；同时带配音时默认开启人声压乐（见下文配音一节）。不满意就换 `--bgm` 的文件重跑，几秒出一个新版本。
 
 发布时直接用平台曲库仍然可以，是零准备的备选。
 
 渲染内挂载也保留：脚本顶层加 `"bgm": "文件名.mp3"`（文件放 `public/`），适合曲子已经定死、想一步出片的情况。新视频默认不要这么做，曲子定不下来时反复重渲很浪费。
 
-## 进阶：配音
+## 进阶：配音（头尾两句式）
 
-本模板学原作，是无旁白设计：大标题句就是旁白。真要加配音，按这个流程走：
+模板的正片是无旁白设计：大标题句就是旁白，中间配音会和画面定死的段长打架（视频等配音）。采用的折中是**只配头尾**：开头一句介绍人物（落在片头卡和第一段上），结尾一句总结升华（盖在收尾定格上），中间保持纯音乐。
 
-1. 给每段写一句口播稿，比标题更口语，不要和标题逐字重复
-2. 用 TTS 逐段生成音频。本机可用 edge-tts（免费，中文音色如 zh-CN-XiaoxiaoNeural）；追求自然度用 Gemini TTS 或 ElevenLabs，需要 API key
-3. 把分段音频按段起始时间拼成一条整轨：某段的起始时间 = 片头 3.5 秒 + 它之前各段 `dur` 累加。用 ffmpeg 的 adelay 逐段延迟再 amix，或者在剪映里拖齐
-4. 用合成工具灌回，BGM 会自动压低垫底：
+脚本里写 `voice: { intro, outro }`（生成器会自动写，intro 不超 24 字，outro 40-70 字），然后：
 
 ```bash
-node tools/mix-audio.mjs out/newton.mp4 --voice 配音整轨.wav --bgm ~/音乐/曲库/某首.mp3
+node tools/make-voice.mjs src/data/newton.json --video out/newton.mp4
+node tools/mix-audio.mjs out/newton.mp4 --bgm ~/音乐/曲库/某首.mp3 --voice out/voice.wav
 ```
 
-提醒：这条流程里画面节奏不迁就语音，口播稿要按每段时长写，写长了会溢到下一段。反过来让每段时长跟着语音走，就得改脚本 `dur` 重渲，本模板默认不这么做。另外标题和口播内容重叠太多会显得啰嗦，原作走红靠的是歌加金句标题，不是配音。
+make-voice 逐句 TTS（默认 edge-tts 音色 zh-CN-YunyangNeural，`pip install edge-tts`；`--voice-name` 可换，`--tts-cmd '命令 {text} {out}'` 可换任何 TTS，`--intro-file/--outro-file` 可喂现成录音），把开头对齐 0 秒、结尾反向对齐到片尾，拼成一条与视频等长的音轨。mix-audio 默认开**人声压乐**：有人声时 BGM 自动压低约 15-20dB，说完自动恢复，中间纯音乐段保持原音量；`--no-duck` 可关掉改全程垫底。
+
+提醒：全片配音不在本模板的设计内——真要做，每段时长得跟着语音走、逐段重渲，那是另一套模板。
 
 ## 常见问题
 

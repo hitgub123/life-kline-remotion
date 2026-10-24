@@ -46,7 +46,7 @@ if (!/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
 
 // ---------- 提示词 ----------
 const example = readFileSync(join(ROOT, "src/data/libai.json"), "utf8");
-const SPEC = `你在为「人生K线」短视频写脚本。视频把一个人的一生画成股票K线图：宣纸底、宋体大标题叙事、密K线自动生长，1080x1920，约66秒，无旁白。你的产出是一份 JSON 脚本，渲染器只读脚本出图，所以字段必须严格合规。
+const SPEC = `你在为「人生K线」短视频写脚本。视频把一个人的一生画成股票K线图：宣纸底、宋体大标题叙事、密K线自动生长，1080x1920，约66秒，正片无旁白、仅头尾两句配音。你的产出是一份 JSON 脚本，渲染器只读脚本出图，所以字段必须严格合规。
 
 字段规范：
 - subject: { name 人名, title 固定"人生K线图", birth_year 出生年(公历整数), stock_label 片头副标(自编，如"唐宋八大家股份 · 代码 1037"), series 固定"人生切片" }
@@ -56,6 +56,7 @@ const SPEC = `你在为「人生K线」短视频写脚本。视频把一个人�
 - segments: 约10段，每段 { id: "s1"起顺排, dur: 6-7秒, kp: [from,to]关键点下标(从0起，相邻段首尾相接，第一段从0开始，最后一段kp是[末点,末点]), candles: 10-30, vol: 0.06-0.18(动荡段大、平稳段小), shape: 1(冲顶段1.5-1.7), headline, quote, stamp?, rocket? }
 - headline: 大标题叙事句。结构是"行的数组，每行是[文本, 是否标红0或1]片段的数组"。一句白话叙事，有戏的词或股市词标红。每行片段文本合计不超过10个汉字(数字字母算半个)，超了会溢出画面，长句拆两行。
 - quote: 底部白字，人物本人最有名的一句作品原文或名言，必须真实存在并核对出处；没有合适的就写 null，绝不编造。不超过15个汉字。
+- voice: { intro, outro } 头尾配音文案。intro: 一句钩子式介绍，必须点名人物，不超过24个汉字；outro: 结尾的总结与升华，40-70个汉字，不得复述 quote 原文，语气克制。
 - 去世那一段加 "stamp": true；最后一段加 "rocket": true 且 candles 为 0。
 
 只输出 JSON 本体，不要解释，不要 markdown 代码块。
@@ -160,6 +161,12 @@ function validate(d) {
         if (w > 10.5) warns.push(`段 ${s.id} 有一行标题宽 ${w.toFixed(1)}，超过 10 会溢出`);
       }
       if (s.quote && textWidth(s.quote) > 15.5) warns.push(`段 ${s.id} 的 quote 太长，会溢出`);
+    }
+    if (d.voice) {
+      if (d.voice.intro && textWidth(d.voice.intro) > 26)
+        warns.push("voice.intro 超过约 26 字，开头配音会拖太长");
+      if (d.voice.outro && (textWidth(d.voice.outro) < 36 || textWidth(d.voice.outro) > 78))
+        warns.push("voice.outro 宜在 40-70 字之间");
     }
     const total = (d.hook_dur || 0) + d.segments.reduce((a, s) => a + s.dur, 0);
     if (total < 55 || total > 80) warns.push(`总时长 ${total.toFixed(1)} 秒，不在 55-80 区间`);

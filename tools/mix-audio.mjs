@@ -8,8 +8,11 @@
  *   node tools/mix-audio.mjs out/newton.mp4 --voice 配音.wav --out 成片.mp4
  *
  * 选项:
- *   --bgm-volume  BGM 音量，默认 0.15（有配音时是垫底音量；只有 BGM 时建议 0.5-0.8）
+ *   --bgm-volume  BGM 音量，默认 0.6（有配音时是无人声段落的音量）
  *   --voice-volume 配音音量，默认 1
+ *   --no-duck     关掉人声压乐。默认开启：有人声时 BGM 被自动压低（实测约 15-20dB），
+ *                 说完自动恢复，中间纯音乐段落保持原音量。关掉则 BGM 全程
+ *                 --bgm-volume*0.25 的垫底音量
  *   --bgm-offset  BGM 时间偏移秒数，可负。生成音乐的第一拍常不在 0 秒，
  *                 用它把第一拍平移到视频 0 秒，拍点才能和蜡烛网格对齐
  *   --voice-offset 配音时间偏移秒数，可负，默认 0
@@ -29,7 +32,8 @@ function flag(key, def) {
 }
 const bgm = flag("bgm", null);
 const voice = flag("voice", null);
-const bgmVol = parseFloat(flag("bgm-volume", voice ? "0.15" : "0.6"));
+const noDuck = args.includes("--no-duck");
+const bgmVol = parseFloat(flag("bgm-volume", voice && noDuck ? "0.15" : "0.6"));
 const voiceVol = parseFloat(flag("voice-volume", "1"));
 const bgmOffset = parseFloat(flag("bgm-offset", "0"));
 const voiceOffset = parseFloat(flag("voice-offset", "0"));
@@ -64,22 +68,36 @@ function offsetFilters(offset) {
 }
 
 const filters = [];
+const duck = bgm && voice && !noDuck;
 let bgmLabel = null;
 let voiceLabel = null;
 if (bgm) {
   const idx = 1;
-  const { trim, delay } = offsetFilters(bgmOffset);
+  const { delay } = offsetFilters(bgmOffset);
   const start = bgmOffset < 0 ? -bgmOffset : 0;
+  const lbl = duck ? "bgmraw" : "bgm";
   filters.push(
-    `[${idx}:a]atrim=start=${start.toFixed(3)}:end=${(start + dur).toFixed(3)},asetpts=N/SR/TB,${delay}volume=${bgmVol},afade=t=out:st=${Math.max(0, dur - 2).toFixed(3)}:d=2[bgm]`
+    `[${idx}:a]atrim=start=${start.toFixed(3)}:end=${(start + dur).toFixed(3)},asetpts=N/SR/TB,${delay}aresample=44100,volume=${bgmVol},afade=t=out:st=${Math.max(0, dur - 2).toFixed(3)}:d=2[${lbl}]`
   );
-  bgmLabel = "[bgm]";
+  bgmLabel = `[${lbl}]`;
 }
 if (voice) {
   const idx = bgm ? 2 : 1;
   const { trim, delay } = offsetFilters(voiceOffset);
-  filters.push(`[${idx}:a]${trim}asetpts=N/SR/TB,${delay}volume=${voiceVol},apad[voice]`);
+  if (duck) {
+    filters.push(
+      `[${idx}:a]${trim}asetpts=N/SR/TB,${delay}aresample=44100,aformat=channel_layouts=stereo,volume=${voiceVol},apad,asplit=2[vkey][voice]`
+    );
+  } else {
+    filters.push(`[${idx}:a]${trim}asetpts=N/SR/TB,${delay}volume=${voiceVol},apad[voice]`);
+  }
   voiceLabel = "[voice]";
+}
+if (duck) {
+  filters.push(
+    `[bgmraw][vkey]sidechaincompress=threshold=0.02:ratio=9:attack=40:release=500:makeup=1[bgm]`
+  );
+  bgmLabel = "[bgm]";
 }
 let aout;
 if (bgmLabel && voiceLabel) {

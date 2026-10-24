@@ -9,6 +9,7 @@
     "still": "remotion still LifeKline",
     "gen": "node tools/generate-script.mjs",
     "music": "node tools/generate-music.mjs",
+    "voice": "node tools/make-voice.mjs",
     "mix": "node tools/mix-audio.mjs"
   },
   "keywords": [],
