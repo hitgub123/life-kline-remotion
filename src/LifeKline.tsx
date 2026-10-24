@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AbsoluteFill,
   Img,
@@ -29,24 +29,6 @@ import {
   niceAxis,
 } from "./lib/series";
 
-const DATA = libai as unknown as ScriptData;
-const BUILT = buildSeries(DATA);
-const ANNOS = annoLayout(BUILT.candles);
-const ANNO_IDX = new Set(ANNOS.keys());
-
-// 涨停/跌停标签稀疏化：按涨跌幅从大到小取，彼此至少间隔 3 根蜡烛
-const TAG_SHOW = (() => {
-  const cand = BUILT.candles
-    .map((c, ci) => ({ ci, mag: Math.abs((c.c - c.o) / c.o) }))
-    .filter((x) => BUILT.candles[x.ci].tag)
-    .sort((a, b) => b.mag - a.mag);
-  const picked = new Set<number>();
-  for (const { ci } of cand) {
-    if ([...picked].every((p) => Math.abs(p - ci) > 3)) picked.add(ci);
-  }
-  return picked;
-})();
-
 const INK = "#221E18";
 const ACCENT = "#A31621";
 const GRAY = "#6B6252";
@@ -75,7 +57,24 @@ async function loadAllFonts(): Promise<void> {
   await document.fonts.ready;
 }
 
-export const LifeKline: React.FC = () => {
+export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData }) => {
+  const DATA = scriptData ?? (libai as unknown as ScriptData);
+  const BUILT = useMemo(() => buildSeries(DATA), [DATA]);
+  const ANNOS = useMemo(() => annoLayout(BUILT.candles), [BUILT]);
+  const ANNO_IDX = useMemo(() => new Set(ANNOS.keys()), [ANNOS]);
+  // 涨停/跌停标签稀疏化：按涨跌幅从大到小取，彼此至少间隔 3 根蜡烛
+  const TAG_SHOW = useMemo(() => {
+    const cand = BUILT.candles
+      .map((c, ci) => ({ ci, mag: Math.abs((c.c - c.o) / c.o) }))
+      .filter((x) => BUILT.candles[x.ci].tag)
+      .sort((a, b) => b.mag - a.mag);
+    const picked = new Set<number>();
+    for (const { ci } of cand) {
+      if ([...picked].every((p) => Math.abs(p - ci) > 3)) picked.add(ci);
+    }
+    return picked;
+  }, [BUILT]);
+
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = frame / fps;

@@ -2,6 +2,8 @@
 
 把一个人物的一生画成股票 K 线图的短视频生成器，Remotion 实现版。宣纸底、宋体大标题、密 K 线自动生长，1080×1920 竖屏，约 66 秒。
 
+**完整使用文档在 [docs/USAGE.md](docs/USAGE.md)**：新增人物的全流程、脚本字段规范、给 AI 助手的操作说明、改风格指南、常见问题，只读那一份就能上手。
+
 内容与渲染分离：一人物一份 JSON 脚本（关键点、标题句、诗句），React 组件只读脚本渲染。换人物等于换脚本，模板和风格不动。脚本格式与 Python 原型仓库 [life-kline-factory](https://github.com/hitgub123/life-kline-factory) 完全一致，两边脚本可互换，原型仓库里有格式的详细说明。
 
 样例成片：`samples/libai-remotion-final.mp4`（李白，脚本在 `src/data/libai.json`）。
