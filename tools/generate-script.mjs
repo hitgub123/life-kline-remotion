@@ -33,7 +33,7 @@ const fromFile = flag("from-file", null);
 const force = args.includes("--force");
 const model =
   flag("model", null) ||
-  (provider === "deepseek" ? "deepseek-chat" : "gemini-2.5-flash");
+  (provider === "deepseek" ? "deepseek-chat" : "gemini-3.8-flash");
 
 if (!name || !id) {
   console.error('用法: node tools/generate-script.mjs "人名" --id EnglishId [--provider gemini|deepseek] [--dry-run] [--from-file 文件]');
