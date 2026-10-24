@@ -25,6 +25,9 @@ export interface ScriptData {
   hook_dur: number;
   seed: number;
   bpm?: number;
+  template?: string;
+  bgm_tags?: string;
+  voice?: { intro?: string; outro?: string; style?: string };
   keypoints: [number, number, string | null][];
   segments: Segment[];
   bgm?: string;

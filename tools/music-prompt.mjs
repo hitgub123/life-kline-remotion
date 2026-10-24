@@ -86,10 +86,11 @@ const structure = [
   .filter(Boolean)
   .join("; ");
 
+const tags = typeof d.bgm_tags === "string" && d.bgm_tags.trim() ? d.bgm_tags.trim() : null;
 const head =
   mode === "vocal"
-    ? `A Mandarin emotional ballad sung by ${voiceDesc}, with piano and strings. Lyrics about a life that rises and falls like a stock chart: glory, downfall, and dignity at the end.`
-    : `Instrumental only, no vocals. A cinematic piano and strings piece about the rises and falls of a great life.`;
+    ? `A Mandarin emotional ballad sung by ${voiceDesc}, with piano and strings. Lyrics about a life that rises and falls like a stock chart: glory, downfall, and dignity at the end.${tags ? ` Style direction: ${tags}.` : ""}`
+    : `Instrumental only, no vocals. ${tags ? tags + "." : "A cinematic piano and strings piece about the rises and falls of a great life."}`;
 
 const PROMPT_TEXT = `${head} Exactly ${bpm} BPM with a strict steady tempo, a strong downbeat right at the very start, no fade-in intro. Structure with timing: ${structure}. The core material should cover about ${Math.round(total)} seconds (a longer track is fine, it will be trimmed). End cleanly on the beat.`;
 if (promptOnly) {

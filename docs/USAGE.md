@@ -181,6 +181,16 @@ BGM 会自动循环铺满全片、结尾 2 秒淡出。音量默认 0.6，可用
 
 渲染内挂载也保留：脚本顶层加 `"bgm": "文件名.mp3"`（文件放 `public/`），适合曲子已经定死、想一步出片的情况。新视频默认不要这么做，曲子定不下来时反复重渲很浪费。
 
+## 模板与风格架构
+
+一套视频的「表现」由三样东西决定，全部写在脚本 JSON 里，生成器按人物气质自动选，人工也可改：
+
+- **视频模板** `template`：渲染组件。注册表在 `src/data/templates.ts`（每套含组件、适合人物、默认风格三件套），Root 按脚本的 `template` 字段选组件渲染。目前只有 `classic`（宣纸杂志风）。新增模板：写一个吃 `scriptData` 的组件，在 templates.ts 里注册一行，生成器那边的模板清单（tools/generate-script.mjs 里的 TEMPLATE_LINES）同步加一行。
+- **配音音色** `voice.style`：音色库在 `tools/voice-profiles.json`，一项 = 引擎 + 音色 id + 可选语气指令。现有三类引擎：`edge`（本机免费音色库，云扬/云健/云希/晓晓/晓菡）、`gemini`（用文字描述定制音色与语气，如沧桑老者、纪录片旁白，需 GEMINI_API_KEY）、`elevenlabs`（音色库与声音克隆，需 ELEVENLABS_API_KEY；克隆好把 voice_id 填进 my-clone 那项即可）。make-voice 按 `--style` > 脚本 `voice.style` > 库里 default 的顺序选。
+- **BGM 风格** `bgm_tags`：一句英文风格标签（曲风+情绪+乐器），music-prompt 和 generate-music 会带上它生成/取曲。
+
+生成器（generate-script）的校验会兜底：template 和 voice.style 写了不存在的值会被自动改回默认并警告。
+
 ## 进阶：配音（头尾两句式）
 
 模板的正片是无旁白设计：大标题句就是旁白，中间配音会和画面定死的段长打架（视频等配音）。采用的折中是**只配头尾**：开头一句介绍人物（落在片头卡和第一段上），结尾一句总结升华（盖在收尾定格上），中间保持纯音乐。
