@@ -29,6 +29,34 @@ ffmpeg -i out/libai-remotion.mp4 -f lavfi -i anullsrc=r=44100:cl=stereo \
 
 渲染不需要 API key。人物脚本由 LLM 按格式规范生成后放进 `src/data`，在 `src/Root.tsx` 注册成 Composition 即可出片。
 
+## 本地使用（Windows）
+
+第一次：
+
+1. 装 Node.js LTS（nodejs.org 下载安装包）
+2. 克隆仓库，进到项目目录
+
+```bat
+git clone https://github.com/hitgub123/life-kline-remotion.git
+cd life-kline-remotion
+npm install
+```
+
+日常使用：
+
+```bat
+git pull
+npx remotion studio
+```
+
+Studio 会在浏览器打开，左侧选 Composition 就能实时预览播放。然后渲染：
+
+```bat
+npx remotion render LifeKline out\libai.mp4
+```
+
+成片在 out 目录。换人物不用改代码，把新脚本 JSON 放进 src/data 并在 src/Root.tsx 注册一个 Composition 即可，这一步通常由 Muse 生成脚本并提交到仓库，用户只需要 pull。
+
 ## 实现要点
 
 - `src/lib/series.ts` 带种子的序列生成，关键点之间用对数空间布朗桥填充行情噪声，和 Python 原型同一套算法（随机流实现不同，曲线骨架一致）
