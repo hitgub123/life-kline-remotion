@@ -20,7 +20,7 @@
 2. 全部要**纯器乐**：提示词里已写明 no vocals / no lyrics，别删。
 3. 下载后按规则改名，放进 `assets/bgm/`。**音频不入 git**（已在 .gitignore），
    留在本地即可，不用 push。
-   命名：`<风格id>-01.mp3`、`<风格id>-02.mp3`，例如 `guofeng-epic-01.mp3`。
+   命名：`<风格id>-01.mp3`、`<风格id>-02.mp3`，例如 `epic-soaring-01.mp3`。
    文件名前缀就是风格 id，登记和自动选曲都靠它，不要加空格和中文。
 4. 登记方式：在仓库根目录跑 `node tools/scan-bgm.mjs`——它在本机测出每首的
    时长、BPM、高潮位置并写进 `assets/bgm/manifest.json`，还会标出高潮没落在
@@ -35,16 +35,16 @@
 Instrumental cinematic piano score, solo grand piano with a soft string ensemble, emotional and inspiring, 120 BPM. Around 75 seconds in total: gentle solo piano motif for the first 10 seconds, strings enter and build from 0:10, main climax with full piano and swelling strings at 0:30 to 0:40, stay powerful, one final emotional lift around 0:55, then a warm resolve and clean ending. No vocals, no lyrics, film soundtrack quality.
 ```
 
-### guofeng-epic（国风史诗 · 古代人物）
-适用：中国古代人物、家国情怀、悲壮叙事。
+### epic-soaring（激昂史诗 · 巅峰/逆袭）
+适用：巅峰时刻、逆袭翻盘、热血题材。
 ```
-Instrumental Chinese epic orchestral score, guzheng, dizi flute, erhu and deep war drums with full strings, heroic and melancholic, 120 BPM. Around 75 seconds in total: quiet solo guzheng opening for 10 seconds, war drums and strings build from 0:10, main climax — grand sweeping drums and full strings — at 0:30 to 0:40, stay epic, one final lift around 0:55, then a short solemn resolve and clean ending. No vocals, no lyrics.
+Instrumental epic orchestral score, soaring strings, heroic French horns and brass, thunderous cinematic drums and taiko hits, fast driving rhythm, 132 BPM. Around 75 seconds in total: powerful drum-and-strings intro for 8 seconds, the theme builds from 0:10, main triumphant climax with the full orchestra at full force at 0:30 to 0:40, stay intense and uplifting, one final even bigger lift around 0:55, ending on a glorious sustained chord. No vocals, no lyrics, no choir.
 ```
 
-### jazz-noir（爵士黑色 · 近代/悬疑）
-适用：近代人物、谍战悬疑、命运转折多的题材。
+### hisaishi-style（久石让风 · 天空/成长）
+适用：成长、回忆、治愈而昂扬的人物；文人、科学家也搭。
 ```
-Instrumental noir jazz, smoky saxophone lead, brushed drums, upright bass and sparse piano chords, mysterious late-night mood, 90 BPM. Around 75 seconds in total: sparse smoky intro for 10 seconds, tension builds from 0:10, dramatic peak with full saxophone cry at 0:30 to 0:40, keep the suspense high, one final sting around 0:55, then fade into the night with a clean ending. No vocals, no lyrics, vintage detective film feel.
+Instrumental orchestral piece in the style of Joe Hisaishi's Studio Ghibli scores, lyrical solo piano with flowing arpeggios, warm string orchestra, gentle flute and oboe, a touch of celesta, nostalgic wonder, the feeling of sky and childhood summers, 100 BPM. Around 75 seconds in total: soft piano arpeggios for the first 10 seconds, strings and woodwinds join and the melody takes flight from 0:10, emotional climax with the full orchestra carrying the main theme at 0:30 to 0:40, stay luminous, one final lift around 0:55, then a gentle nostalgic resolve and clean ending. No vocals, no lyrics.
 ```
 
 ### warm-folk（温暖民谣 · 温情人物）
@@ -53,14 +53,14 @@ Instrumental noir jazz, smoky saxophone lead, brushed drums, upright bass and sp
 Instrumental warm acoustic folk, fingerstyle acoustic guitar, soft piano, gentle strings and light hand percussion, nostalgic and heartwarming, 112 BPM. Around 75 seconds in total: gentle guitar intro for 10 seconds, piano and strings join and build from 0:10, warm uplifting peak at 0:30 to 0:40, stay bright, one final lift around 0:55, then a soft resolve and clean ending. No vocals, no lyrics.
 ```
 
-### rock-anthem（摇滚颂歌 · 热血/逆袭）
-适用：运动员、企业家、逆袭翻盘型人物。
-```
-Instrumental stadium rock anthem, driving electric guitars, powerful live drums, bass and piano accents, rebellious and triumphant, 120 BPM. Around 75 seconds in total: single guitar riff intro for 8 seconds, full band builds from 0:10, explosive chorus climax at 0:30 to 0:40, stay big and loud, a final even bigger chorus lift around 0:55, ending on a victorious sustained chord. No vocals, no lyrics.
-```
-
 ### electronic-pulse（电子脉冲 · 科技/当代）
 适用：科技人物、当代题材、快节奏叙事。
 ```
 Instrumental electronic score, pulsing synth bass, arpeggiated synths, deep atmospheric pads and modern cinematic drums, futuristic and relentless, 120 BPM. Around 75 seconds in total: pulsing synth intro for 10 seconds, layers build from 0:10, main high-energy peak at 0:30 to 0:40, stay driving, one final lift around 0:55, then a clean electronic ending. No vocals, no lyrics.
 ```
+
+## 已砍风格（不要再生成）
+
+- jazz-noir（爵士）、guofeng-epic（国风）、rock-anthem（摇滚）：
+  2026-10-25 作者试听后认为 AI 生成效果不好听，砍掉。风格目录已同步移除，
+  生成器不会再选它们；已生成过的老曲子留在曲库也只作铺底，不进自动选曲。
