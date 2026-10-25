@@ -59,12 +59,14 @@ const OPENAI_COMPAT = {
   deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
   opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
 };
-// 审查方接力顺序：官方 DeepSeek → OpenCode Zen → Gemini。
-// 不指定 --provider 时按此顺序自动跳过失败的（没余额/限流/模型下架），
-// 用谁审的就盖谁的章；指定 --provider 则只用那一家，方便定位问题。
+// 审查方接力顺序：官方 DeepSeek → Gemini。
+// 不指定 --provider 时按此顺序自动跳过失败的（没余额/限流），用谁审的就盖谁的章；
+// 指定 --provider 则只用那一家，方便定位问题。
+// 注：opencode 不进自动接力——Zen 免费模型自 2026-09 起只许在 OpenCode 应用内
+// 调用，外部直连一律 403 FreeTierError；手动 --provider opencode 可用 Zen 付费模型。
 function candidates() {
   if (pinnedProvider) return [pinnedProvider];
-  return ["deepseek", "opencode", "gemini"].filter((p) => process.env[KEY_ENVS[p]]);
+  return ["deepseek", "gemini"].filter((p) => process.env[KEY_ENVS[p]]);
 }
 const base = basename(scriptPath).replace(/\.json$/, "");
 const script = JSON.parse(readFileSync(scriptPath, "utf8"));

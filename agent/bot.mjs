@@ -58,6 +58,23 @@ const client = new Client({
 });
 
 const statusMessages = new Map();
+const heartbeats = new Map();
+function stopHeartbeat(seq) {
+  const t = heartbeats.get(seq);
+  if (t) clearInterval(t);
+  heartbeats.delete(seq);
+}
+function startHeartbeat(job, step) {
+  stopHeartbeat(job.seq);
+  const since = Date.now();
+  const t = setInterval(async () => {
+    const msg = statusMessages.get(job.seq);
+    if (!msg) return stopHeartbeat(job.seq);
+    const s = Math.round((Date.now() - since) / 1000);
+    await msg.edit(`🎬 #${job.seq}「${job.name}」${step}……（已 ${s} 秒，还在跑）`).catch(() => {});
+  }, 60000);
+  heartbeats.set(job.seq, t);
+}
 async function channelOf(job) {
   return client.channels.fetch(job.channelId).catch(() => null);
 }
@@ -71,6 +88,16 @@ async function sendVideo(channel, filePath, text) {
 }
 
 setHooks({
+  async onEnqueue(job, ahead) {
+    if (!ahead) return; // 队列空着，onStart 马上就来，不重复出声
+    const ch = await channelOf(job);
+    if (ch) await ch.send(`📥 已入队 #${job.seq}「${job.name}」，前面还有 ${ahead} 个任务。`).catch(() => {});
+  },
+  async onStart(job) {
+    const ch = await channelOf(job);
+    if (!ch) return;
+    statusMessages.set(job.seq, await ch.send(`🎬 #${job.seq}「${job.name}」开始生产……`).catch(() => null));
+  },
   async onStep(job, step) {
     const ch = await channelOf(job);
     if (!ch) return;
@@ -78,8 +105,10 @@ setHooks({
     const prev = statusMessages.get(job.seq);
     if (prev) await prev.edit(text).catch(() => {});
     else statusMessages.set(job.seq, await ch.send(text).catch(() => null));
+    startHeartbeat(job, step);
   },
   async onDone(job) {
+    stopHeartbeat(job.seq);
     const ch = await channelOf(job);
     if (!ch) return;
     const head = `✅ #${job.seq}「${job.name}」出片了`;
@@ -88,6 +117,7 @@ setHooks({
     await ch.send("把 BGM 发给我（mp3/wav 文件）我就合成最终版；不需要的话回复「就这样」。");
   },
   async onFail(job) {
+    stopHeartbeat(job.seq);
     const ch = await channelOf(job);
     if (ch) await ch.send(`⚠️ #${job.seq}「${job.name}」生产失败：${(job.error || "").slice(0, 300)}`);
   },

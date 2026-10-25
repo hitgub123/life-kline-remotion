@@ -23,7 +23,7 @@ function save() {
   writeFileSync(STATE_PATH, JSON.stringify(state, null, 2) + "\n");
 }
 
-let hooks = { onStep: () => {}, onDone: () => {}, onFail: () => {}, onMixed: () => {} };
+let hooks = { onEnqueue: () => {}, onStart: () => {}, onStep: () => {}, onDone: () => {}, onFail: () => {}, onMixed: () => {} };
 export function setHooks(h) {
   hooks = { ...hooks, ...h };
 }
@@ -32,6 +32,7 @@ let seq = state.jobs.reduce((m, j) => Math.max(m, j.seq || 0), 0);
 let working = false;
 
 export function enqueue({ name, personId, requestedBy, channelId, guest }) {
+  const ahead = state.jobs.filter((j) => j.status === "queued" || j.status === "running").length;
   const job = {
     seq: ++seq,
     name,
@@ -47,6 +48,7 @@ export function enqueue({ name, personId, requestedBy, channelId, guest }) {
   };
   state.jobs.push(job);
   save();
+  hooks.onEnqueue(job, ahead);
   pump();
   return job;
 }
@@ -123,6 +125,7 @@ async function pump() {
   current = job;
   job.status = "running";
   save();
+  hooks.onStart(job);
   try {
     const out = await run("node", ["tools/produce.mjs", job.name, "--id", job.personId]);
     const m = out.match(/──────── 生产小结 ────────([\s\S]*)$/);
