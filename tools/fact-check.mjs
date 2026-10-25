@@ -45,7 +45,7 @@ const pinnedProvider = flag("provider", null);
 const pinnedModel = flag("model", null);
 const DEFAULT_MODELS = {
   deepseek: "deepseek-chat",
-  opencode: "deepseek-v4-flash-free",
+  opencode: "deepseek-v4.1-flash-free",
   gemini: "gemini-3.8-flash",
 };
 const KEY_ENVS = {
@@ -103,8 +103,7 @@ ${dossier}
 脚本 JSON：
 ${JSON.stringify(script)}`;
 
-async function callOne(p, prompt) {
-  const model = pinnedModel || DEFAULT_MODELS[p];
+async function callOne(p, model, prompt) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 240000);
   try {
@@ -148,20 +147,47 @@ async function callOne(p, prompt) {
   }
 }
 
+// Zen 的免费模型名单会轮换改名（如 v4-flash-free → v4.1-flash-free）：
+// 运行时拉实时名单（该接口免 key），把在架免费模型按偏好排序挨个试，自愈。
+const ZEN_FALLBACK_FREE = [
+  "deepseek-v4.1-flash-free",
+  "deepseek-v4-flash-free",
+  "glm-5.3-flash-free",
+  "mimo-v2.6-flash-free",
+];
+async function zenFreeModels() {
+  try {
+    const res = await fetch("https://opencode.ai/zen/v1/models", {
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const ids = (await res.json()).data.map((m) => m.id).filter((id) => id.endsWith("-free"));
+    const rank = (id) =>
+      id.startsWith("deepseek-") ? 0 : id.startsWith("glm-") ? 1 : id.startsWith("qwen") ? 2 : id.startsWith("mimo-") ? 3 : id.startsWith("minimax-") ? 4 : 5;
+    ids.sort((a, b) => rank(a) - rank(b));
+    return ids.length ? ids : ZEN_FALLBACK_FREE;
+  } catch {
+    return ZEN_FALLBACK_FREE;
+  }
+}
+
 async function callReviewer(prompt) {
   const list = candidates();
   if (!list.length)
     throw new Error("没有任何可用的审查 key：DEEPSEEK_API_KEY / OPENCODE_API_KEY / GEMINI_API_KEY 至少配一个");
   let lastErr = null;
   for (const p of list) {
-    const model = pinnedModel || DEFAULT_MODELS[p];
-    console.log(`审查中（${p}/${model}，对照 ${base}.md）……`);
-    try {
-      const text = await callOne(p, prompt);
-      return { text, provider: p, model };
-    } catch (e) {
-      lastErr = e;
-      console.warn(`⚠ ${p} 调用失败：${String(e.message).slice(0, 220)}${list.length > 1 ? "，自动换下一家" : ""}`);
+    const models =
+      p === "opencode" && !pinnedModel ? await zenFreeModels() : [pinnedModel || DEFAULT_MODELS[p]];
+    for (const model of models) {
+      console.log(`审查中（${p}/${model}，对照 ${base}.md）……`);
+      try {
+        const text = await callOne(p, model, prompt);
+        return { text, provider: p, model };
+      } catch (e) {
+        lastErr = e;
+        console.warn(`⚠ ${p}/${model} 调用失败：${String(e.message).slice(0, 220)}，自动换下一个`);
+      }
     }
   }
   throw lastErr;
