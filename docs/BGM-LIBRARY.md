@@ -22,8 +22,10 @@
    留在本地即可，不用 push。
    命名：`<风格id>-01.mp3`、`<风格id>-02.mp3`，例如 `guofeng-epic-01.mp3`。
    文件名前缀就是风格 id，登记和自动选曲都靠它，不要加空格和中文。
-4. 登记方式：把新文件名清单发给 Muse，由它补进 `assets/bgm/manifest.json`
-   并实测 BPM 填表（BPM 在本地测）。
+4. 登记方式：在仓库根目录跑 `node tools/scan-bgm.mjs`——它在本机测出每首的
+   时长、BPM、高潮位置并写进 `assets/bgm/manifest.json`，还会标出高潮没落在
+   28–45 秒的曲子。之后把 manifest.json 这一个文件 commit 上去即可，
+   远端看表就知道曲库全貌。
 
 ## 风格与提示词
 

@@ -1,1 +1,65 @@
-{"_说明":"曲库登记表。命名规范：新曲一律 <风格id>-<编号>.mp3（风格 id 见 tools/bgm-styles.json 与 docs/BGM-LIBRARY.md），文件名前缀即风格，自动选曲靠它。styles/bpm/mood 听过后补；auto=true 的曲子将来可被 produce 按脚本 bgm_style 自动选用（机制见 docs/ASSETS.md），定制的保持 false。","tracks":[{"auto":false,"bpm":null,"file":"Rises_and_Falls.mp3","mood":"","note":"待标注","styles":[]},{"auto":false,"bpm":null,"file":"Rises_and_Falls_Version2.mp3","mood":"","note":"待标注","styles":[]},{"auto":false,"bpm":null,"file":"Rises_and_Falls_Take3.mp3","mood":"","note":"待标注","styles":[]},{"auto":false,"bpm":null,"file":"Rises_and_Falls_Take4.mp3","mood":"","note":"待标注","styles":[]},{"auto":false,"bpm":null,"file":"折線.mp3","mood":"","note":"为苏轼定制生成，待标注","styles":[]},{"auto":false,"bpm":null,"file":"折線 (Version 2).mp3","mood":"","note":"为苏轼定制生成，待标注","styles":[]}]}
+{
+  "_说明": "曲库登记表。命名规范：新曲一律 <风格id>-<编号>.mp3（风格 id 见 tools/bgm-styles.json 与 docs/BGM-LIBRARY.md），文件名前缀即风格，自动选曲靠它。styles/bpm/mood 听过后补；auto=true 的曲子将来可被 produce 按脚本 bgm_style 自动选用（机制见 docs/ASSETS.md），定制的保持 false。",
+  "tracks": [
+    {
+      "file": "Rises_and_Falls_Take3.mp3",
+      "styles": [],
+      "bpm": 133.3,
+      "mood": "",
+      "auto": false,
+      "duration": 164,
+      "climaxAt": 109.8,
+      "note": "待标注"
+    },
+    {
+      "file": "Rises_and_Falls_Take4.mp3",
+      "styles": [],
+      "bpm": 121.2,
+      "mood": "",
+      "auto": false,
+      "duration": 162.3,
+      "climaxAt": 107.3,
+      "note": "待标注"
+    },
+    {
+      "file": "Rises_and_Falls_Version2.mp3",
+      "styles": [],
+      "bpm": 139.5,
+      "mood": "",
+      "auto": false,
+      "duration": 177.9,
+      "climaxAt": 133.3,
+      "note": "待标注"
+    },
+    {
+      "file": "Rises_and_Falls.mp3",
+      "styles": [],
+      "bpm": 70.6,
+      "mood": "",
+      "auto": false,
+      "duration": 164.5,
+      "climaxAt": 105.8,
+      "note": "待标注"
+    },
+    {
+      "file": "折線 (Version 2).mp3",
+      "styles": [],
+      "bpm": 81.1,
+      "mood": "",
+      "auto": false,
+      "duration": 167.3,
+      "climaxAt": 117.8,
+      "note": "为苏轼定制生成，待标注"
+    },
+    {
+      "file": "折線.mp3",
+      "styles": [],
+      "bpm": 162.2,
+      "mood": "",
+      "auto": false,
+      "duration": 177.1,
+      "climaxAt": 126.3,
+      "note": "为苏轼定制生成，待标注"
+    }
+  ]
+}
