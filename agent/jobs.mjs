@@ -8,6 +8,7 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { ROOT, CFG, isOwner } from "./config.mjs";
+import { logError } from "./log.mjs";
 
 const STATE_PATH = join(ROOT, "agent/state.json");
 let state = { jobs: [], usage: {} };
@@ -26,6 +27,15 @@ function save() {
 let hooks = { onEnqueue: () => {}, onStart: () => {}, onStep: () => {}, onDone: () => {}, onFail: () => {}, onMixed: () => {} };
 export function setHooks(h) {
   hooks = { ...hooks, ...h };
+}
+/** hook 隔离：通知层（Discord 发送等）出错不许把任务队列带崩，记日志即可。 */
+function safeHook(name, ...args) {
+  try {
+    const r = hooks[name](...args);
+    if (r && typeof r.catch === "function") r.catch((e) => logError(`hook ${name} 出错:`, e));
+  } catch (e) {
+    logError(`hook ${name} 出错:`, e);
+  }
 }
 
 let seq = state.jobs.reduce((m, j) => Math.max(m, j.seq || 0), 0);
@@ -48,7 +58,7 @@ export function enqueue({ name, personId, requestedBy, channelId, guest }) {
   };
   state.jobs.push(job);
   save();
-  hooks.onEnqueue(job, ahead);
+  safeHook("onEnqueue", job, ahead);
   pump();
   return job;
 }
@@ -112,7 +122,7 @@ function run(cmd, args) {
         const m = line.match(/^=== (.+?) ===$/);
         if (m && m[1] !== lastStep) {
           lastStep = m[1];
-          hooks.onStep(current, lastStep);
+          safeHook("onStep", current, lastStep);
         }
       }
     });
@@ -133,7 +143,7 @@ async function pump() {
   current = job;
   job.status = "running";
   save();
-  hooks.onStart(job);
+  safeHook("onStart", job);
   try {
     const out = await run("node", ["tools/produce.mjs", job.name, "--id", job.personId]);
     const m = out.match(/──────── 生产小结 ────────([\s\S]*)$/);
@@ -148,7 +158,7 @@ async function pump() {
     const firstNotice = !job.notified && !(disk && disk.notified);
     if (firstNotice) job.notified = "done";
     save();
-    if (firstNotice) hooks.onDone(job);
+    if (firstNotice) safeHook("onDone", job);
   } catch (e) {
     job.status = "failed";
     job.error = String(e.message || e).slice(0, 500);
@@ -156,7 +166,7 @@ async function pump() {
     const firstNotice = !job.notified && !(disk && disk.notified);
     if (firstNotice) job.notified = "failed";
     save();
-    if (firstNotice) hooks.onFail(job);
+    if (firstNotice) safeHook("onFail", job);
   } finally {
     current = null;
     working = false;
@@ -173,7 +183,7 @@ export async function mixBgmFor(job, bgmPath) {
   job.resultPath = join(ROOT, "out", `${job.base}-final.mp4`);
   job.status = "done";
   save();
-  hooks.onMixed(job);
+  safeHook("onMixed", job);
   return job;
 }
 

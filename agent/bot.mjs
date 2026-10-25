@@ -24,6 +24,7 @@ import {
   ButtonStyle,
 } from "discord.js";
 import { ROOT, CFG, isOwner, missingConfig } from "./config.mjs";
+import { logLine, logError, logPath } from "./log.mjs";
 import { setHooks, recover, listJobs, awaitingBgmJobFor, finishJob, mixBgmFor, guestQuota, consumeGuestQuota, enqueue } from "./jobs.mjs";
 import { chat, listPeople } from "./brain.mjs";
 import demoCatalog from "./demo-catalog.json" with { type: "json" };
@@ -46,6 +47,14 @@ if (miss.length) {
   console.log("照着 agent/README.md 的五步走，把值填进仓库根目录的 .env 再启动。");
   process.exit(0);
 }
+
+// 常驻进程的防崩兜底：单个请求的异步错误不许带走整个进程，全部记进落盘日志。
+// 未捕获的同步异常说明状态已不可信，记完日志退出，等人工重启。
+process.on("unhandledRejection", (e) => logError("未处理的异步错误（已兜底，进程继续）:", e));
+process.on("uncaughtException", (e) => {
+  logError("未捕获异常，进程退出，请重启 agent:", e);
+  process.exit(1);
+});
 
 const client = new Client({
   intents: [
@@ -89,11 +98,13 @@ async function sendVideo(channel, filePath, text) {
 
 setHooks({
   async onEnqueue(job, ahead) {
+    logLine(`任务入队 #${job.seq}「${job.name}」（前面 ${ahead} 个）`);
     if (!ahead) return; // 队列空着，onStart 马上就来，不重复出声
     const ch = await channelOf(job);
     if (ch) await ch.send(`📥 已入队 #${job.seq}「${job.name}」，前面还有 ${ahead} 个任务。`).catch(() => {});
   },
   async onStart(job) {
+    logLine(`任务开始 #${job.seq}「${job.name}」`);
     const ch = await channelOf(job);
     if (!ch) return;
     statusMessages.set(job.seq, await ch.send(`🎬 #${job.seq}「${job.name}」开始生产……`).catch(() => null));
@@ -109,6 +120,7 @@ setHooks({
   },
   async onDone(job) {
     stopHeartbeat(job.seq);
+    logLine(`任务出片 #${job.seq}「${job.name}」-> ${job.resultPath || "无产物路径"}`);
     const ch = await channelOf(job);
     if (!ch) return;
     const head = `✅ #${job.seq}「${job.name}」出片了`;
@@ -118,10 +130,12 @@ setHooks({
   },
   async onFail(job) {
     stopHeartbeat(job.seq);
+    logError(`任务失败 #${job.seq}「${job.name}」:`, job.error || "");
     const ch = await channelOf(job);
     if (ch) await ch.send(`⚠️ #${job.seq}「${job.name}」生产失败：${(job.error || "").slice(0, 300)}`);
   },
   async onMixed(job) {
+    logLine(`任务定稿（已配 BGM）#${job.seq}「${job.name}」`);
     const ch = await channelOf(job);
     if (ch && job.resultPath) await sendVideo(ch, job.resultPath, `🎵 #${job.seq}「${job.name}」最终版（已配 BGM）`);
   },
@@ -145,18 +159,19 @@ function findIdByName(name) {
 }
 
 client.once("clientReady", async () => {
-  console.log(`已登录: ${client.user.tag}`);
+  logLine(`已登录: ${client.user.tag}，日志文件: ${logPath()}`);
   const rest = new REST({ version: "10" }).setToken(CFG.token);
   const route = CFG.guildId
     ? Routes.applicationGuildCommands(client.application.id, CFG.guildId)
     : Routes.applicationCommands(client.application.id);
   await rest.put(route, { body: COMMANDS });
-  console.log("斜杠命令已注册", CFG.guildId ? "（服务器内，立即生效）" : "（全局，传播可能需要几分钟）");
+  logLine("斜杠命令已注册", CFG.guildId ? "（服务器内，立即生效）" : "（全局，传播可能需要几分钟）");
   recover();
 });
 
 client.on("interactionCreate", async (interaction) => {
   try {
+    logLine(`交互 ← ${interaction.user.username}: ${interaction.isButton() ? "按钮 " + interaction.customId : "/" + (interaction.commandName || "?")}`);
     if (interaction.isButton() && interaction.customId.startsWith("demo:")) {
       const entry = demoCatalog.find((p) => p.id === interaction.customId.slice(5));
       if (!entry) return interaction.reply({ content: "这个人物不在演示目录里了。", ephemeral: true });
@@ -232,7 +247,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.commandName === "people") return interaction.reply(listPeople());
   } catch (e) {
-    console.error("interaction 出错:", e);
+    logError("interaction 出错:", e);
     if (interaction.isRepliable() && !interaction.replied)
       interaction.reply({ content: "处理出错了，稍后再试。", ephemeral: true }).catch(() => {});
   }
@@ -240,6 +255,7 @@ client.on("interactionCreate", async (interaction) => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+  try {
   const userId = message.author.id;
   const awaiting = awaitingBgmJobFor(userId);
 
@@ -272,16 +288,21 @@ client.on("messageCreate", async (message) => {
   }
 
   await message.channel.sendTyping().catch(() => {});
+  logLine(`消息 ← ${message.author.username}: ${text.slice(0, 80)}`);
   const reply = await chat(message.channelId, text, {
     userId,
     isOwner: isOwner(userId),
     channelId: message.channelId,
   });
   await message.reply(reply.slice(0, 1900));
+  } catch (e) {
+    logError("消息处理出错:", e);
+    await message.reply("处理出错了，我记下来了，稍后再试。").catch(() => {});
+  }
 });
 
 client.login(CFG.token).catch((e) => {
-  console.error("登录失败:", e.message);
-  console.error("多半是 token 不对，或没在开发者后台给机器人开启 MESSAGE CONTENT INTENT。见 agent/README.md。");
+  logError("登录失败:", e.message);
+  logError("多半是 token 不对，或没在开发者后台给机器人开启 MESSAGE CONTENT INTENT。见 agent/README.md。");
   process.exit(1);
 });

@@ -138,11 +138,13 @@ export async function chat(channelKey, userText, ctx) {
     tools: [{ functionDeclarations: TOOLS }],
     generationConfig: { temperature: 0.4 },
   });
+  try {
   for (let round = 0; round < 6; round++) {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${CFG.brainModel}:generateContent`,
       {
         method: "POST",
+        signal: AbortSignal.timeout(90000),
         headers: { "Content-Type": "application/json", "x-goog-api-key": CFG.geminiKey },
         body: JSON.stringify(body()),
       }
@@ -170,6 +172,10 @@ export async function chat(channelKey, userText, ctx) {
       });
     }
     history.push({ role: "user", parts: responses });
+  }
+  } catch (e) {
+    console.error("大脑调用异常:", e);
+    return "大脑那边网络出了点问题，我记下来了，稍后再问我一次。";
   }
   histories.set(channelKey, history);
   return "这一轮调用的工具太多了，我先停一下，请把需求拆开再说一次。";

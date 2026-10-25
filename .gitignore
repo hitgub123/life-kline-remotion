@@ -5,3 +5,4 @@ tools/last-raw-output.txt
 tools/last-music-response.json
 .env
 agent/state.json
+agent/logs/
