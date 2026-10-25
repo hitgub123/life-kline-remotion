@@ -9,6 +9,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,12 +37,43 @@ const engineFilter = flag("engine", null);
 const OUT_DIR = join(ROOT, "out", "auditions");
 mkdirSync(OUT_DIR, { recursive: true });
 
+// edge 引擎预检（只测一次）：先查 edge-tts 装没装，再真合成一句测网络与服务，
+// 免得每把 edge 音色都报一遍看不懂的堆栈尾巴
+let edgeStatus; // undefined=未测, true=可用, string=不可用原因
+function checkEdge() {
+  if (edgeStatus !== undefined) return edgeStatus;
+  const v = spawnSync("edge-tts", ["--version"], { encoding: "utf8", timeout: 15000 });
+  if (v.error || v.status !== 0) {
+    edgeStatus =
+      "本机没装 edge-tts：先跑 pip install edge-tts（若报 externally-managed-environment，加 --break-system-packages），装好重跑试音";
+    return edgeStatus;
+  }
+  const t = spawnSync(
+    "node",
+    [join(ROOT, "tools", "make-voice.mjs"), "--style", "yunyang", "--intro", "测试。", "--total", "3", "--out", join(tmpdir(), "lk-preflight.wav")],
+    { encoding: "utf8", timeout: 90000 }
+  );
+  edgeStatus = t.status === 0 ? true : "edge-tts 已装但合成失败，多半是网络连不上微软语音服务：单独跑一次 make-voice --style yunyang 看完整报错";
+  return edgeStatus;
+}
+
 const results = [];
 for (const [id, p] of Object.entries(profiles.styles)) {
   if (only && !only.includes(id)) continue;
   if (engineFilter && p.engine !== engineFilter) continue;
   if (p.engine === "elevenlabs" && /[^A-Za-z0-9_-]/.test(p.voice || "")) {
     results.push([id, p, "跳过", "占位音色，还没填真实 voice_id"]);
+    continue;
+  }
+  if (p.engine === "edge") {
+    const st = checkEdge();
+    if (st !== true) {
+      results.push([id, p, "跳过", st]);
+      continue;
+    }
+  }
+  if (p.engine === "gemini" && !process.env.GEMINI_API_KEY) {
+    results.push([id, p, "跳过", "缺 GEMINI_API_KEY（写进仓库根目录 .env）"]);
     continue;
   }
   const out = join(OUT_DIR, `${id}.wav`);
@@ -65,12 +97,12 @@ for (const [id, p] of Object.entries(profiles.styles)) {
     } catch {}
     results.push([id, p, "✓", `${f.status === 0 ? `${id}-compact.wav` : `${id}.wav`}（${dur}）`]);
   } else {
-    const err = (r.stderr || r.stdout || "").split("\n").filter(Boolean).slice(-2).join(" ").slice(0, 160);
-    results.push([id, p, "✗", err || "make-voice 失败（无输出）"]);
+    const lines = (r.stderr || r.stdout || "").split("\n").map((s) => s.trim()).filter(Boolean);
+    const err = (lines.find((l) => /Error|ENOENT|error/i.test(l)) || lines[0] || "make-voice 失败（无输出）").slice(0, 200);
+    results.push([id, p, "✗", err]);
   }
 }
 
 console.log("试音结果（同一段词，文件在 out/auditions/）：");
 for (const [id, p, ok, info] of results) console.log(`- ${ok} ${id}（${p.label}，引擎 ${p.engine}）：${info}`);
 console.log("\n听完把要留的音色 id 告诉 Muse，它会固定成常用阵容写进音色库。");
-console.log("提示：edge 引擎全灭多半是本机没装 edge-tts（pip install edge-tts）；gemini 失败先查 .env 里的 GEMINI_API_KEY。");
