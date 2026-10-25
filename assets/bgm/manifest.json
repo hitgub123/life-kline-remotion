@@ -2,64 +2,422 @@
   "_说明": "曲库登记表。命名规范：新曲一律 <风格id>-<编号>.mp3（风格 id 见 tools/bgm-styles.json 与 docs/BGM-LIBRARY.md），文件名前缀即风格，自动选曲靠它。styles/bpm/mood 听过后补；auto=true 的曲子将来可被 produce 按脚本 bgm_style 自动选用（机制见 docs/ASSETS.md），定制的保持 false。",
   "tracks": [
     {
-      "file": "Rises_and_Falls_Take3.mp3",
+      "file": "acoustic-warmth-01.mp3",
       "styles": [],
-      "bpm": 133.3,
+      "bpm": 71.4,
       "mood": "",
       "auto": false,
-      "duration": 164,
-      "climaxAt": 109.8,
-      "note": "待标注"
+      "duration": 77,
+      "climaxAt": 62.3,
+      "note": ""
     },
     {
-      "file": "Rises_and_Falls_Take4.mp3",
+      "file": "acoustic-warmth-02.mp3",
+      "styles": [],
+      "bpm": 73.2,
+      "mood": "",
+      "auto": false,
+      "duration": 77.4,
+      "climaxAt": 26.8,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-03.mp3",
+      "styles": [],
+      "bpm": 71.4,
+      "mood": "",
+      "auto": false,
+      "duration": 77.3,
+      "climaxAt": 60.3,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-04.mp3",
       "styles": [],
       "bpm": 121.2,
       "mood": "",
       "auto": false,
-      "duration": 162.3,
-      "climaxAt": 107.3,
-      "note": "待标注"
+      "duration": 76.5,
+      "climaxAt": 38.8,
+      "note": ""
     },
     {
-      "file": "Rises_and_Falls_Version2.mp3",
+      "file": "acoustic-warmth-05.mp3",
+      "styles": [],
+      "bpm": 74.1,
+      "mood": "",
+      "auto": false,
+      "duration": 76.4,
+      "climaxAt": 43.3,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-06.mp3",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 121.4,
+      "climaxAt": 83.8,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-07.mp3",
+      "styles": [],
+      "bpm": 126.3,
+      "mood": "",
+      "auto": false,
+      "duration": 75.3,
+      "climaxAt": 49.8,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-08.mp3",
+      "styles": [],
+      "bpm": 77.9,
+      "mood": "",
+      "auto": false,
+      "duration": 71.7,
+      "climaxAt": 45.3,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-01.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 79,
+      "climaxAt": 44.8,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-02.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 78.8,
+      "climaxAt": 46.8,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-03.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 122.4,
+      "mood": "",
+      "auto": false,
+      "duration": 71.7,
+      "climaxAt": 50.3,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-04.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 72.5,
+      "climaxAt": 40.3,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-05.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 131.9,
+      "mood": "",
+      "auto": false,
+      "duration": 80.1,
+      "climaxAt": 33.3,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-06.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 96.8,
+      "mood": "",
+      "auto": false,
+      "duration": 75.6,
+      "climaxAt": 39.3,
+      "note": ""
+    },
+    {
+      "file": "cinematic-piano-07.mp3",
+      "styles": [
+        "cinematic-piano"
+      ],
+      "bpm": 130.4,
+      "mood": "",
+      "auto": false,
+      "duration": 75.5,
+      "climaxAt": 48.8,
+      "note": ""
+    },
+    {
+      "file": "cyberpunk-drive-03.mp3",
       "styles": [],
       "bpm": 139.5,
       "mood": "",
       "auto": false,
-      "duration": 177.9,
-      "climaxAt": 133.3,
-      "note": "待标注"
+      "duration": 72.1,
+      "climaxAt": 23.3,
+      "note": ""
     },
     {
-      "file": "Rises_and_Falls.mp3",
+      "file": "cyberpunk-drive-04.mp3",
       "styles": [],
+      "bpm": 136.4,
+      "mood": "",
+      "auto": false,
+      "duration": 75.1,
+      "climaxAt": 60.3,
+      "note": ""
+    },
+    {
+      "file": "epic-soaring-01.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 77.3,
+      "climaxAt": 41.3,
+      "note": ""
+    },
+    {
+      "file": "epic-soaring-02.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 122.4,
+      "mood": "",
+      "auto": false,
+      "duration": 74.9,
+      "climaxAt": 64.8,
+      "note": ""
+    },
+    {
+      "file": "epic-soaring-03.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 77.7,
+      "climaxAt": 43.8,
+      "note": ""
+    },
+    {
+      "file": "epic-soaring-04.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
       "bpm": 70.6,
       "mood": "",
       "auto": false,
-      "duration": 164.5,
-      "climaxAt": 105.8,
-      "note": "待标注"
+      "duration": 77.4,
+      "climaxAt": 30.3,
+      "note": ""
     },
     {
-      "file": "折線 (Version 2).mp3",
-      "styles": [],
-      "bpm": 81.1,
+      "file": "epic-soaring-05.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 122.4,
       "mood": "",
       "auto": false,
-      "duration": 167.3,
-      "climaxAt": 117.8,
-      "note": "为苏轼定制生成，待标注"
+      "duration": 76,
+      "climaxAt": 44.3,
+      "note": ""
     },
     {
-      "file": "折線.mp3",
-      "styles": [],
-      "bpm": 162.2,
+      "file": "epic-soaring-06.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 120,
       "mood": "",
       "auto": false,
-      "duration": 177.1,
-      "climaxAt": 126.3,
-      "note": "为苏轼定制生成，待标注"
+      "duration": 77.2,
+      "climaxAt": 58.3,
+      "note": ""
+    },
+    {
+      "file": "epic-soaring-07.mp3",
+      "styles": [
+        "epic-soaring"
+      ],
+      "bpm": 127.7,
+      "mood": "",
+      "auto": false,
+      "duration": 78,
+      "climaxAt": 51.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-01.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 76.3,
+      "climaxAt": 44.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-02.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 71.3,
+      "climaxAt": 43.3,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-03.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 76.5,
+      "climaxAt": 42.3,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-04_1.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 76.1,
+      "climaxAt": 57.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-04.m4a",
+      "styles": [],
+      "bpm": 127.7,
+      "mood": "",
+      "auto": false,
+      "duration": 75.9,
+      "climaxAt": 64.3,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-05.m4a",
+      "styles": [],
+      "bpm": 111.1,
+      "mood": "",
+      "auto": false,
+      "duration": 72.4,
+      "climaxAt": 40.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-06.m4a",
+      "styles": [],
+      "bpm": 74.1,
+      "mood": "",
+      "auto": false,
+      "duration": 76.2,
+      "climaxAt": 30.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-07.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 76.5,
+      "climaxAt": 46.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-08.m4a",
+      "styles": [],
+      "bpm": 73.2,
+      "mood": "",
+      "auto": false,
+      "duration": 75.1,
+      "climaxAt": 32.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-09.m4a",
+      "styles": [],
+      "bpm": 125,
+      "mood": "",
+      "auto": false,
+      "duration": 79.1,
+      "climaxAt": 44.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-10.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 77,
+      "climaxAt": 61.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-11.m4a",
+      "styles": [],
+      "bpm": 137.9,
+      "mood": "",
+      "auto": false,
+      "duration": 76.9,
+      "climaxAt": 59.3,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-12.m4a",
+      "styles": [],
+      "bpm": 134.8,
+      "mood": "",
+      "auto": false,
+      "duration": 75.8,
+      "climaxAt": 51.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-13.m4a",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 77.1,
+      "climaxAt": 44.8,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-14.m4a",
+      "styles": [],
+      "bpm": 133.3,
+      "mood": "",
+      "auto": false,
+      "duration": 76.4,
+      "climaxAt": 46.3,
+      "note": ""
     }
   ]
 }
