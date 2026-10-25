@@ -206,7 +206,7 @@ BGM 会自动循环铺满全片、结尾 2 秒淡出。音量默认 0.6，可用
 一套视频的「表现」由三样东西决定，全部写在脚本 JSON 里，生成器按人物气质自动选，人工也可改。三套目录都是单一数据源（文档与工具读同一份，加新条目不用改代码）：
 
 - **视频模板** `template`：元数据目录在 `src/data/templates.json`（名称、适合人物、默认风格），组件注册在 `src/data/templates.ts`，Root 按脚本的 `template` 字段选组件渲染。目前只有 `classic`（宣纸杂志风）。新增模板：写一个吃 `scriptData` 的组件，在 templates.ts 里注册一行，并在 templates.json 里加一项元数据。
-- **配音音色** `voice.style`：音色库在 `tools/voice-profiles.json`，一项 = 引擎 + 音色 id + 可选语气指令。现有三类引擎：`edge`（本机免费音色库，云扬/云健/云希/晓晓/晓菡）、`gemini`（用文字描述定制音色与语气，如沧桑老者、纪录片旁白，需 GEMINI_API_KEY）、`elevenlabs`（音色库与声音克隆，需 ELEVENLABS_API_KEY；克隆好把 voice_id 填进 my-clone 那项即可）。make-voice 按 `--style` > 脚本 `voice.style` > 库里 default 的顺序选。
+- **配音音色** `voice.style`：音色库在 `tools/voice-profiles.json`，一项 = 引擎 + 音色 id + 可选语气指令。现有三类引擎：`edge`（本机免费音色库，云扬/云健/云希/晓晓/晓菡）、`gemini`（用文字描述定制音色与语气，如沧桑老者、纪录片旁白，需 GEMINI_API_KEY）、`elevenlabs`（音色库与声音克隆，需 ELEVENLABS_API_KEY；克隆好把 voice_id 填进 my-clone 那项即可）。make-voice 按 `--style` > 脚本 `voice.style` > 库里 default 的顺序选。选角先试音：`node tools/audition-voice.mjs` 把库里每把嗓子用同一段标准台词各录一遍到 `out/auditions/`，听完再定常用阵容。
 - **BGM 风格** `bgm_style`：风格目录在 `tools/bgm-styles.json`（电影钢琴、古风史诗、爵士夜色等），脚本只写 id，工具按目录的 tags 生成音乐提示词；`bgm_tags` 是工具落盘时自动展开的英文标签。
 
 另有一份**人物资料**（与目录无关，是事实来源）：`src/data/people/<id>.md`，由 fetch-person 从维基百科抓取，生成时喂给模型、审查时作对照。生成器（generate-script）的校验会兜底：template、voice.style、bgm_style 写了不存在的值会被自动改回默认并警告。
