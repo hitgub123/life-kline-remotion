@@ -23,6 +23,14 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+// 与 agent 共用仓库根目录的 .env（已在环境变量里的优先，不覆盖）
+try {
+  for (const line of readFileSync(join(ROOT, ".env"), "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+} catch {}
+
 const args = process.argv.slice(2);
 const scriptPath = args.find((a) => !a.startsWith("--") && a.endsWith(".json"));
 function flag(key, def) {
