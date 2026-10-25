@@ -243,7 +243,10 @@ export function annoLayout(candles: Candle[]): Map<number, AnnoPlace> {
     const cx = X(ci);
     const preferBelow = c.h > alo + (ahi - alo) * 0.8;
     const sides: (1 | -1)[] = preferBelow ? [-1, 1] : [1, -1];
-    let done = false;
+    // 不再先到先得：枚举两侧×三层的所有不碰撞落位，按「引线长 + 逆偏好罚分」
+    // 选最短的。旧逻辑会把标注推到偏好侧第 3 层（引线 ~96），哪怕另一侧
+    // 第 1 层就有空位——长引线在画面上会被误读成暴涨暴跌的影线。
+    let best: { side: 1 | -1; level: number; score: number } | null = null;
     for (const side of sides) {
       for (let level = 0; level < 3; level++) {
         let y0: number;
@@ -260,16 +263,24 @@ export function annoLayout(candles: Candle[]): Map<number, AnnoPlace> {
         const hit = placed.some(
           ([px0, px1, py0, py1]) => !(x1 < px0 - 8 || x0 > px1 + 8 || y1 < py0 - 6 || y0 > py1 + 6),
         );
-        if (!hit) {
-          placed.push([x0, x1, y0, y1]);
-          out.set(ci, { side, level });
-          done = true;
-          break;
-        }
+        if (hit) continue;
+        const score = level * 44 + (side === sides[0] ? 0 : 60);
+        if (!best || score < best.score) best = { side, level, score };
       }
-      if (done) break;
     }
-    if (!done) out.set(ci, { side: sides[0], level: 2 });
+    if (best) {
+      let y0: number;
+      let y1: number;
+      if (best.side === 1) {
+        y1 = Y(c.h) - 14 - best.level * 44;
+        y0 = y1 - 40;
+      } else {
+        y0 = Y(c.l) + 14 + best.level * 44;
+        y1 = y0 + 40;
+      }
+      placed.push([cx - tw / 2, cx + tw / 2, y0, y1]);
+      out.set(ci, { side: best.side, level: best.level });
+    } else out.set(ci, { side: sides[0], level: 2 });
   });
   return out;
 }

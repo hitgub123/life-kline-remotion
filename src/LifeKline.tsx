@@ -287,7 +287,7 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
             const ty = Y(c.h) - 14 - place.level * 44 - 40;
             return (
               <g key={`anno${ci}`} opacity={a}>
-                <line x1={cx} y1={Y(c.h) - 4} x2={cx} y2={ty + 42} stroke="#5A5242" strokeWidth={2} />
+                <line x1={cx} y1={Y(c.h) - 4} x2={cx} y2={ty + 42} stroke="#5A5242" strokeWidth={2} strokeOpacity={place.level === 2 ? 0.38 : 0.9} />
                 <circle cx={cx} cy={Y(c.c)} r={3.5} fill={INK} />
                 <text x={cx} y={ty + 31} textAnchor="middle" fontFamily={SERIF} fontSize={31} fill={INK}>
                   {c.anno}
@@ -298,7 +298,7 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
           const ty = Y(c.l) + 14 + place.level * 44;
           return (
             <g key={`anno${ci}`} opacity={a}>
-              <line x1={cx} y1={ty - 2} x2={cx} y2={Y(c.l) + 4} stroke="#5A5242" strokeWidth={2} />
+              <line x1={cx} y1={ty - 2} x2={cx} y2={Y(c.l) + 4} stroke="#5A5242" strokeWidth={2} strokeOpacity={place.level === 2 ? 0.38 : 0.9} />
               <circle cx={cx} cy={Y(c.c)} r={3.5} fill={INK} />
               <text x={cx} y={ty + 31} textAnchor="middle" fontFamily={SERIF} fontSize={31} fill={INK}>
                 {c.anno}

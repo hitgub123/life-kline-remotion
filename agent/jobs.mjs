@@ -56,6 +56,14 @@ export function enqueue({ name, personId, requestedBy, channelId, guest }) {
 export function getJob(seqNo) {
   return state.jobs.find((j) => j.seq === seqNo);
 }
+/** 回读磁盘上的任务记录（多进程同跑时以落盘状态为准，防重复通知）。 */
+function persistedJob(seqNo) {
+  try {
+    return JSON.parse(readFileSync(STATE_PATH, "utf8")).jobs.find((j) => j.seq === seqNo) || null;
+  } catch {
+    return null;
+  }
+}
 /** 用户确认「就这样」：待补 BGM 的任务直接定稿。 */
 export function finishJob(job) {
   job.status = "done";
@@ -134,13 +142,21 @@ async function pump() {
     const plainMp4 = join(ROOT, "out", `${job.base}.mp4`);
     job.resultPath = existsSync(finalMp4) ? finalMp4 : plainMp4;
     job.status = "awaiting_bgm";
+    // 完成通知只发一次：重启恢复/多实例都可能让同一任务重复跑完，
+    // 先落盘标记再通知，且通知前回读磁盘状态防两个进程同时抢发
+    const disk = persistedJob(job.seq);
+    const firstNotice = !job.notified && !(disk && disk.notified);
+    if (firstNotice) job.notified = "done";
     save();
-    hooks.onDone(job);
+    if (firstNotice) hooks.onDone(job);
   } catch (e) {
     job.status = "failed";
     job.error = String(e.message || e).slice(0, 500);
+    const disk = persistedJob(job.seq);
+    const firstNotice = !job.notified && !(disk && disk.notified);
+    if (firstNotice) job.notified = "failed";
     save();
-    hooks.onFail(job);
+    if (firstNotice) hooks.onFail(job);
   } finally {
     current = null;
     working = false;
