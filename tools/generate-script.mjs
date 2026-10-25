@@ -35,10 +35,14 @@ const fromFile = flag("from-file", null);
 const force = args.includes("--force");
 const model =
   flag("model", null) ||
-  (provider === "deepseek" ? "deepseek-chat" : "gemini-3.8-flash");
+  (provider === "deepseek"
+    ? "deepseek-chat"
+    : provider === "opencode"
+      ? "deepseek-v4-flash-free"
+      : "gemini-3.8-flash");
 
 if (!name || !id) {
-  console.error('用法: node tools/generate-script.mjs "人名" --id EnglishId [--provider gemini|deepseek] [--dry-run] [--from-file 文件]');
+  console.error('用法: node tools/generate-script.mjs "人名" --id EnglishId [--provider gemini|deepseek|opencode] [--dry-run] [--from-file 文件]');
   process.exit(1);
 }
 if (!/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
@@ -114,10 +118,16 @@ async function callLLM(prompt) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 180000);
   try {
-    if (provider === "deepseek") {
-      const key = process.env.DEEPSEEK_API_KEY;
-      if (!key) throw new Error("缺环境变量 DEEPSEEK_API_KEY");
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
+    // OpenAI 兼容通道：deepseek=官方接口，opencode=OpenCode Zen 网关（免费 DeepSeek 等）
+    const OPENAI_COMPAT = {
+      deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
+      opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
+    };
+    if (OPENAI_COMPAT[provider]) {
+      const { base, keyEnv } = OPENAI_COMPAT[provider];
+      const key = process.env[keyEnv];
+      if (!key) throw new Error(`缺环境变量 ${keyEnv}`);
+      const res = await fetch(`${base}/chat/completions`, {
         method: "POST",
         signal: ctrl.signal,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
@@ -128,7 +138,7 @@ async function callLLM(prompt) {
           temperature: 0.7,
         }),
       });
-      if (!res.ok) throw new Error(`DeepSeek API ${res.status}: ${await res.text()}`);
+      if (!res.ok) throw new Error(`${provider} API ${res.status}: ${await res.text()}`);
       const j = await res.json();
       return j.choices[0].message.content;
     }

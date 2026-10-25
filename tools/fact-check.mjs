@@ -3,7 +3,8 @@
  * 事实核查：让「另一个模型」对照人物资料（维基摘录）审查脚本，自动修正错误。
  *
  * 为什么要异源：生成和审查用同一个模型，它会用同样的记忆错误肯定自己。
- * 默认审查方：有 DEEPSEEK_API_KEY 就用 DeepSeek，否则用 Gemini（--provider 可指定）。
+ * 默认审查方：有 DEEPSEEK_API_KEY 用 DeepSeek 官方，其次 OPENCODE_API_KEY
+ * 走 OpenCode Zen 的免费 DeepSeek，都没有才用 Gemini（--provider 可指定）。
  *
  * 用法:
  *   node tools/fact-check.mjs src/data/sushi.json
@@ -29,11 +30,23 @@ function flag(key, def) {
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 }
 if (!scriptPath) {
-  console.error("用法: node tools/fact-check.mjs src/data/xxx.json [--provider deepseek|gemini] [--model 模型名]");
+  console.error("用法: node tools/fact-check.mjs src/data/xxx.json [--provider deepseek|opencode|gemini] [--model 模型名]");
   process.exit(1);
 }
-const provider = flag("provider", process.env.DEEPSEEK_API_KEY ? "deepseek" : "gemini");
-const model = flag("model", provider === "deepseek" ? "deepseek-chat" : "gemini-3.8-flash");
+const provider = flag(
+  "provider",
+  process.env.DEEPSEEK_API_KEY ? "deepseek" : process.env.OPENCODE_API_KEY ? "opencode" : "gemini"
+);
+const model = flag(
+  "model",
+  provider === "deepseek" ? "deepseek-chat" : provider === "opencode" ? "deepseek-v4-flash-free" : "gemini-3.8-flash"
+);
+// OpenAI 兼容通道：deepseek 是官方接口；opencode 是 OpenCode Zen 网关
+// （key 在 opencode.ai 领，免费层有 DeepSeek 系模型，名单会轮换，模型名可 --model 换）
+const OPENAI_COMPAT = {
+  deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
+  opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
+};
 const base = basename(scriptPath).replace(/\.json$/, "");
 const script = JSON.parse(readFileSync(scriptPath, "utf8"));
 const personName = script.subject?.name || base;
@@ -75,10 +88,11 @@ async function callReviewer(prompt) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 240000);
   try {
-    if (provider === "deepseek") {
-      const key = process.env.DEEPSEEK_API_KEY;
-      if (!key) throw new Error("缺环境变量 DEEPSEEK_API_KEY");
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
+    if (OPENAI_COMPAT[provider]) {
+      const { base, keyEnv } = OPENAI_COMPAT[provider];
+      const key = process.env[keyEnv];
+      if (!key) throw new Error(`缺环境变量 ${keyEnv}`);
+      const res = await fetch(`${base}/chat/completions`, {
         method: "POST",
         signal: ctrl.signal,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
@@ -89,7 +103,7 @@ async function callReviewer(prompt) {
           temperature: 0.2,
         }),
       });
-      if (!res.ok) throw new Error(`DeepSeek API ${res.status}: ${await res.text()}`);
+      if (!res.ok) throw new Error(`${provider} API ${res.status}: ${await res.text()}`);
       return (await res.json()).choices[0].message.content;
     }
     const key = process.env.GEMINI_API_KEY;
