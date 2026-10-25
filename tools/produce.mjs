@@ -10,13 +10,15 @@
  *   node tools/produce.mjs "辛弃疾" --id XinQiji --skip-review --force
  *
  * 环境变量: GEMINI_API_KEY（生成/审查）, DEEPSEEK_API_KEY（审查异源，优先）,
- * 本机需装好 edge-tts（配音）。BGM 不给 --bgm 时：先出带配音的成片，并打印
- * 音乐提示词与补混命令，等曲子下载好后一条命令补上（不用重渲）。
+ * 本机需装好 edge-tts（配音）。BGM 不给 --bgm 时：按脚本 bgm_style 从曲库
+ * 自动选曲（tools/pick-bgm.mjs，登记表里 auto 的曲目）直接混成最终版；
+ * 曲库无候选才打印音乐提示词与补混命令，等人工送歌。--no-auto-bgm 关掉自动选曲。
  */
 import { spawn } from "node:child_process";
 import { readFileSync, existsSync, statSync, createWriteStream, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { pickBgm } from "./pick-bgm.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // 与 agent 共用仓库根目录的 .env（已在环境变量里的优先，不覆盖）
@@ -40,6 +42,7 @@ const bgmOffset = flag("bgm-offset", null);
 const force = args.includes("--force");
 const skipReview = args.includes("--skip-review");
 const skipVoice = args.includes("--skip-voice");
+const noAutoBgm = args.includes("--no-auto-bgm");
 if (!name || !id || !/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
   console.error('用法: node tools/produce.mjs "人名" --id EnglishId [--bgm 曲.mp3] [--provider gemini] [--skip-review] [--force]');
   console.error("（id 由调用者给：人物姓名的拼音连写，如 SuShi / XinQiji）");
@@ -121,26 +124,40 @@ if (!skipVoice && !voiceMade)
   ]);
 if (skipVoice) console.log("=== 5/6 配音：按要求跳过 ===");
 
+// 选曲：手动 --bgm 优先；否则按脚本风格从曲库自动选；--no-auto-bgm 关掉自动
+let bgmPath = bgm;
+let bgmPick = null;
+if (!bgmPath && !noAutoBgm) {
+  try {
+    bgmPick = pickBgm(ROOT, JSON.parse(readFileSync(scriptPath, "utf8")), base);
+  } catch {}
+  if (bgmPick) {
+    bgmPath = join("assets", "bgm", bgmPick.file);
+    console.log(`\n=== 自动选曲：${bgmPick.file}（风格 ${bgmPick.style}${bgmPick.fallback ? "，原风格无候选、回退默认风格" : ""}，高潮 ${bgmPick.climaxAt ?? "?"}s，候选 ${bgmPick.candidates} 首）===`);
+  } else console.log("\n=== 自动选曲：曲库无候选，留待补混 ===");
+}
+
 // 6 合成
 const mixArgs = [`out/${base}.mp4`, "--out", `out/${base}-final.mp4`];
-if (bgm) {
-  mixArgs.push("--bgm", bgm);
+if (bgmPath) {
+  mixArgs.push("--bgm", bgmPath);
   if (bgmOffset) mixArgs.push("--bgm-offset", bgmOffset);
 }
 if (voiceMade) mixArgs.push("--voice", `out/${base}-voice.wav`);
-if (bgm || voiceMade) await run("6/6 合成", "node", ["tools/mix-audio.mjs", ...mixArgs]);
+if (bgmPath || voiceMade) await run("6/6 合成", "node", ["tools/mix-audio.mjs", ...mixArgs]);
 else console.log("=== 6/6 合成：无配音无 BGM，最终产物即渲染文件 ===");
 
-const finalVideo = bgm || voiceMade ? finalPath : videoPath;
+const finalVideo = bgmPath || voiceMade ? finalPath : videoPath;
 const s = JSON.parse(readFileSync(scriptPath, "utf8"));
 console.log(`
 ──────── 生产小结 ────────
 人物：${s.subject.name}（${s.subject.birth_year} 年生）
 模板：${s.template || "classic"}　配音音色：${s.voice?.style || "无"}　BGM 风格：${s.bgm_style || "-"}
 事实核查：${s.factcheck ? `${s.factcheck.verdict}（${s.factcheck.by}，问题 ${s.factcheck.issues} 处，详见 src/data/people/${base}.review.md）` : reviewState === "failed" ? "⚠ 审查失败未完成——脚本未经异源核查，发布前请重跑 fact-check" : "未审查（按要求跳过）"}
+BGM 状态：${bgm ? `手动指定（${bgm}）` : bgmPick ? `已自动配乐（${bgmPick.file}）` : "未配乐，待补混"}
 产物：${finalVideo.replace(ROOT + "/", "")}
-日志：${logPath.replace(ROOT + "/", "")}${bgm ? "" : "\n（还没配 BGM：曲子下载好后跑下一行补混，不用重渲）"}`);
-if (!bgm) {
+日志：${logPath.replace(ROOT + "/", "")}${bgmPath ? "" : "\n（还没配 BGM：曲子下载好后跑下一行补混，不用重渲）"}`);
+if (!bgmPath) {
   console.log(`音乐提示词: node tools/music-prompt.mjs ${scriptRel}`);
   console.log(`补混命令:   node tools/mix-audio.mjs out/${base}.mp4 --bgm <曲子文件>${voiceMade ? ` --voice out/${base}-voice.wav` : ""} --out out/${base}-final.mp4`);
 }

@@ -84,3 +84,9 @@
 
 - 作者试听四把女声候选（晓晓、晓菡、Gemini 纪录片女声、Gemini 温润女声）后裁决（原话）：「只有 xiaoxiao 是女声，compact 那个还行」——定版 xiaoxiao（zh-CN-XiaoxiaoNeural）为唯一常用音色兼默认，其余候选一并停用。
 - 至此配音阵容收敛为单音色：脚本 voice.style 实际只会落到 xiaoxiao；日后想重开选角，改 voice-profiles.json 的停用标注即可。
+
+## 2026-10-25 · 自动选曲接通
+
+- produce 合成前自动选曲（tools/pick-bgm.mjs）：按脚本 bgm_style 查曲库登记表，入池条件 = auto:true + styles 命中 + 文件在本机；按高潮贴合度（目标 40 秒）排序，前三名按人物 id 哈希挑一首（同人可复现、人间分散）。优先级：手动 --bgm > 自动选曲 > 等人工送歌；--no-auto-bgm 可关。
+- 曲库全量入池：52 首全部补齐 styles（falcom-rock→trails-battle、counterattack-epic→xenoblade-epic 别名）并翻 auto:true；新曲登记时带风格默认 auto:true，不想被选的手动改回 false。
+- Discord 侧：小结出现「BGM 状态：已自动配乐」即任务直接定稿，机器人不再索要 BGM；但自动配乐的任务仍可换曲——发来新文件即覆盖重混。

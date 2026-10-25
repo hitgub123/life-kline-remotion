@@ -1,5 +1,5 @@
 {
-  "_说明": "曲库登记表。命名规范：新曲一律 <风格id>-<编号>.mp3（风格 id 见 tools/bgm-styles.json 与 docs/BGM-LIBRARY.md），文件名前缀即风格，自动选曲靠它。styles/bpm/mood 听过后补；auto=true 的曲子将来可被 produce 按脚本 bgm_style 自动选用（机制见 docs/ASSETS.md），定制的保持 false。",
+  "_说明": "曲库登记表。命名规范：新曲一律 <风格id>-<编号>.mp3（风格 id 见 tools/bgm-styles.json 与 docs/BGM-LIBRARY.md），文件名前缀即风格，自动选曲靠它。styles/bpm/mood 听过后补；auto=true 的曲子在 produce 自动选曲池里（按 styles 匹配脚本 bgm_style 选用，机制见 docs/ASSETS.md）；不想被自动选的改回 false，为某人定制的保持 false。",
   "tracks": [
     {
       "file": "acoustic-warmth-01.mp3",
@@ -8,7 +8,7 @@
       ],
       "bpm": 71.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77,
       "climaxAt": 62.3,
       "note": ""
@@ -20,7 +20,7 @@
       ],
       "bpm": 73.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.4,
       "climaxAt": 26.8,
       "note": ""
@@ -32,7 +32,7 @@
       ],
       "bpm": 71.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.3,
       "climaxAt": 60.3,
       "note": ""
@@ -44,7 +44,7 @@
       ],
       "bpm": 121.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.5,
       "climaxAt": 38.8,
       "note": ""
@@ -56,7 +56,7 @@
       ],
       "bpm": 74.1,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.4,
       "climaxAt": 43.3,
       "note": ""
@@ -68,7 +68,7 @@
       ],
       "bpm": 126.3,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.3,
       "climaxAt": 49.8,
       "note": ""
@@ -80,7 +80,7 @@
       ],
       "bpm": 77.9,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 71.7,
       "climaxAt": 45.3,
       "note": ""
@@ -92,7 +92,7 @@
       ],
       "bpm": 74.1,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.3,
       "climaxAt": 44.8,
       "note": ""
@@ -104,7 +104,7 @@
       ],
       "bpm": 109.1,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.2,
       "climaxAt": 51.3,
       "note": ""
@@ -116,7 +116,7 @@
       ],
       "bpm": 136.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.4,
       "climaxAt": 67.3,
       "note": ""
@@ -128,7 +128,7 @@
       ],
       "bpm": 121.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 72.2,
       "climaxAt": 55.8,
       "note": ""
@@ -140,7 +140,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 79,
       "climaxAt": 44.8,
       "note": ""
@@ -152,7 +152,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 78.8,
       "climaxAt": 46.8,
       "note": ""
@@ -164,7 +164,7 @@
       ],
       "bpm": 122.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 71.7,
       "climaxAt": 50.3,
       "note": ""
@@ -176,7 +176,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 72.5,
       "climaxAt": 40.3,
       "note": ""
@@ -188,7 +188,7 @@
       ],
       "bpm": 131.9,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 80.1,
       "climaxAt": 33.3,
       "note": ""
@@ -200,7 +200,7 @@
       ],
       "bpm": 96.8,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.6,
       "climaxAt": 39.3,
       "note": ""
@@ -212,57 +212,67 @@
       ],
       "bpm": 130.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.5,
       "climaxAt": 48.8,
       "note": ""
     },
     {
       "file": "counterattack-epic-01.mp3",
-      "styles": [],
+      "styles": [
+        "xenoblade-epic"
+      ],
       "bpm": 72.3,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.7,
       "climaxAt": 49.8,
       "note": ""
     },
     {
       "file": "counterattack-epic-04.mp3",
-      "styles": [],
+      "styles": [
+        "xenoblade-epic"
+      ],
       "bpm": 73.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.4,
       "climaxAt": 68.3,
       "note": ""
     },
     {
       "file": "counterattack-epic-05.mp3",
-      "styles": [],
+      "styles": [
+        "xenoblade-epic"
+      ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.7,
       "climaxAt": 30.8,
       "note": ""
     },
     {
       "file": "counterattack-epic-06.mp3",
-      "styles": [],
+      "styles": [
+        "xenoblade-epic"
+      ],
       "bpm": 71.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76,
       "climaxAt": 40.3,
       "note": ""
     },
     {
       "file": "counterattack-epic-09.mp3",
-      "styles": [],
+      "styles": [
+        "xenoblade-epic"
+      ],
       "bpm": 121.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77,
       "climaxAt": 68.8,
       "note": ""
@@ -274,7 +284,7 @@
       ],
       "bpm": 139.5,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 72.1,
       "climaxAt": 23.3,
       "note": ""
@@ -286,7 +296,7 @@
       ],
       "bpm": 136.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.1,
       "climaxAt": 60.3,
       "note": ""
@@ -298,7 +308,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.3,
       "climaxAt": 41.3,
       "note": ""
@@ -310,7 +320,7 @@
       ],
       "bpm": 122.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 74.9,
       "climaxAt": 64.8,
       "note": ""
@@ -322,7 +332,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.7,
       "climaxAt": 43.8,
       "note": ""
@@ -334,7 +344,7 @@
       ],
       "bpm": 70.6,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.4,
       "climaxAt": 30.3,
       "note": ""
@@ -346,7 +356,7 @@
       ],
       "bpm": 122.4,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76,
       "climaxAt": 44.3,
       "note": ""
@@ -358,7 +368,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.2,
       "climaxAt": 58.3,
       "note": ""
@@ -370,57 +380,67 @@
       ],
       "bpm": 127.7,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 78,
       "climaxAt": 51.8,
       "note": ""
     },
     {
       "file": "falcom-rock-01.mp3",
-      "styles": [],
+      "styles": [
+        "trails-battle"
+      ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 82.9,
       "climaxAt": 38.3,
       "note": ""
     },
     {
       "file": "falcom-rock-02.mp3",
-      "styles": [],
+      "styles": [
+        "trails-battle"
+      ],
       "bpm": 75.9,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 74.4,
       "climaxAt": 13.8,
       "note": ""
     },
     {
       "file": "falcom-rock-03.mp3",
-      "styles": [],
+      "styles": [
+        "trails-battle"
+      ],
       "bpm": 121.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.6,
       "climaxAt": 46.8,
       "note": ""
     },
     {
       "file": "falcom-rock-05.mp3",
-      "styles": [],
+      "styles": [
+        "trails-battle"
+      ],
       "bpm": 129,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.6,
       "climaxAt": 59.8,
       "note": ""
     },
     {
       "file": "falcom-rock-06.mp3",
-      "styles": [],
+      "styles": [
+        "trails-battle"
+      ],
       "bpm": 127.7,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.9,
       "climaxAt": 70.3,
       "note": ""
@@ -432,7 +452,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.3,
       "climaxAt": 44.8,
       "note": ""
@@ -444,7 +464,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 71.3,
       "climaxAt": 43.3,
       "note": ""
@@ -456,7 +476,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.5,
       "climaxAt": 42.3,
       "note": ""
@@ -468,7 +488,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.1,
       "climaxAt": 57.8,
       "note": ""
@@ -480,7 +500,7 @@
       ],
       "bpm": 127.7,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.9,
       "climaxAt": 64.3,
       "note": ""
@@ -492,7 +512,7 @@
       ],
       "bpm": 111.1,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 72.4,
       "climaxAt": 40.8,
       "note": ""
@@ -504,7 +524,7 @@
       ],
       "bpm": 74.1,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.2,
       "climaxAt": 30.8,
       "note": ""
@@ -516,7 +536,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.5,
       "climaxAt": 46.8,
       "note": ""
@@ -528,7 +548,7 @@
       ],
       "bpm": 73.2,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.1,
       "climaxAt": 32.8,
       "note": ""
@@ -540,7 +560,7 @@
       ],
       "bpm": 125,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 79.1,
       "climaxAt": 44.8,
       "note": ""
@@ -552,7 +572,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77,
       "climaxAt": 61.8,
       "note": ""
@@ -564,7 +584,7 @@
       ],
       "bpm": 137.9,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.9,
       "climaxAt": 59.3,
       "note": ""
@@ -576,7 +596,7 @@
       ],
       "bpm": 134.8,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 75.8,
       "climaxAt": 51.8,
       "note": ""
@@ -588,7 +608,7 @@
       ],
       "bpm": 120,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 77.1,
       "climaxAt": 44.8,
       "note": ""
@@ -600,7 +620,7 @@
       ],
       "bpm": 133.3,
       "mood": "",
-      "auto": false,
+      "auto": true,
       "duration": 76.4,
       "climaxAt": 46.3,
       "note": ""

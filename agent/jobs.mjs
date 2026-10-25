@@ -84,7 +84,9 @@ export function listJobs(limit = 10) {
   return state.jobs.slice(-limit).reverse();
 }
 export function awaitingBgmJobFor(userId) {
-  return state.jobs.find((j) => j.requestedBy === userId && j.status === "awaiting_bgm");
+  const mine = state.jobs.filter((j) => j.requestedBy === userId);
+  // 待补 BGM 的优先；已自动配乐定稿的也算「可换曲」目标（发来新曲即覆盖重混）
+  return mine.find((j) => j.status === "awaiting_bgm") || [...mine].reverse().find((j) => j.status === "done" && j.autoBgm) || null;
 }
 
 /** 客人配额：演示模式每人每天 N 条、全局每天 M 条（config 可调）。 */
@@ -151,7 +153,9 @@ async function pump() {
     const finalMp4 = join(ROOT, "out", `${job.base}-final.mp4`);
     const plainMp4 = join(ROOT, "out", `${job.base}.mp4`);
     job.resultPath = existsSync(finalMp4) ? finalMp4 : plainMp4;
-    job.status = "awaiting_bgm";
+    const autoM = job.summary.match(/BGM 状态：已自动配乐（(.+?)）/);
+    job.autoBgm = autoM ? autoM[1] : null;
+    job.status = autoM ? "done" : "awaiting_bgm";
     // 完成通知只发一次：重启恢复/多实例都可能让同一任务重复跑完，
     // 先落盘标记再通知，且通知前回读磁盘状态防两个进程同时抢发
     const disk = persistedJob(job.seq);
@@ -182,6 +186,7 @@ export async function mixBgmFor(job, bgmPath) {
   await run("node", ["tools/mix-audio.mjs", ...args]);
   job.resultPath = join(ROOT, "out", `${job.base}-final.mp4`);
   job.status = "done";
+  delete job.autoBgm; // 人工换曲后不再是自动配乐，退出「可换曲」目标
   save();
   safeHook("onMixed", job);
   return job;

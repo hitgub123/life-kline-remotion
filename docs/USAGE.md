@@ -42,7 +42,7 @@ ffmpeg -i out/newton.mp4 -f lavfi -i anullsrc=r=44100:cl=stereo -c:v copy -c:a a
 常驻版 Agent 已有骨架：`agent/` 目录（Discord 机器人 + LLM 大脑 + 任务队列），主人在 Discord 里对话即可生产，客人走演示模式。配置与启动见 `agent/README.md`（五步：建 Bot、开消息内容意图、邀进服务器、填 `.env`、启动）。
 
 ```bash
-node tools/produce.mjs "辛弃疾" --id XinQiji                  # 取材→生成→审查→渲染→配音 全自动
+node tools/produce.mjs "辛弃疾" --id XinQiji                  # 取材→生成→审查→渲染→配音→自动选曲合成 全自动
 node tools/produce.mjs "辛弃疾" --id XinQiji --bgm 曲子.mp3   # 手头已有曲子时连合成一起做完
 ```
 

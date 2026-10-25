@@ -24,7 +24,9 @@
    老曲子归档放 `assets/bgm/old/` 子文件夹：扫描器只看顶层，自动跳过归档区。
    生成工具自带的名字（如 `ghibli-nostalgia-*`）不用改名：扫描器里有别名映射表
    （PREFIX_ALIASES），会自动把 styles 补成目录 id（ghibli-nostalgia→hisaishi-style、
-   acoustic-warmth→warm-folk、cyberpunk-drive→electronic-pulse）。
+   acoustic-warmth→warm-folk、cyberpunk-drive→electronic-pulse、falcom-rock→trails-battle、
+   counterattack-epic→xenoblade-epic）。带风格的新曲登记时 auto 默认 true，
+   即进 produce 的自动选曲池；不想让某首被自动选，把它在 manifest 里的 auto 改回 false。
    文件名前缀就是风格 id，登记和自动选曲都靠它。**文件名禁止空格和括号**
    （命令行不加引号就会断词、找不到文件），中文可以但推荐全用英文小写。
 4. 登记方式：在仓库根目录跑 `node tools/scan-bgm.mjs`——它在本机测出每首的

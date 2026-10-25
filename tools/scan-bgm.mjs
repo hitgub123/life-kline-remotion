@@ -38,6 +38,8 @@ const PREFIX_ALIASES = {
   "ghibli-nostalgia": "hisaishi-style",
   "acoustic-warmth": "warm-folk",
   "cyberpunk-drive": "electronic-pulse",
+  "falcom-rock": "trails-battle",
+  "counterattack-epic": "xenoblade-epic",
 };
 
 function probeDuration(file) {
@@ -167,7 +169,7 @@ for (const f of files) {
     styles: prev.styles && prev.styles.length ? prev.styles : styleHit ? [styleHit] : [],
     bpm: ana && ana.bpm ? ana.bpm : prev.bpm ?? null,
     mood: prev.mood || "",
-    auto: prev.auto ?? false,
+    auto: prev.auto ?? (styleHit ? true : false),
     duration: dur ? Math.round(dur * 10) / 10 : prev.duration ?? null,
     climaxAt: ana && ana.climaxAt != null ? ana.climaxAt : prev.climaxAt ?? null,
     note: prev.note || "",

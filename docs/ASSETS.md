@@ -29,9 +29,10 @@
   （file / styles / bpm / mood / auto / note）。
   **音频文件不入 git**（.gitignore 已排除，曲库只存在于本机）；
   manifest.json 是文本台账，保留在 git 里，选曲与登记都以它为准。
-- **当前状态（2026-10-25）**：风格是 LLM 选的，但具体曲子还没接自动选——
-  produce 不读 manifest，出片后等人工发曲（Discord 回传或 `--bgm` 指定）再补混。
-- 待接的自动选曲：produce 在渲染前按脚本 `bgm_style` 查 manifest，
-  命中 `auto: true` 且 styles 含该风格的曲子就直接混音、跳过等待；
-  所以请把听过、确认可通用的曲子补上 styles/bpm 并把 auto 改成 true，
-  为某人定制的曲子（如《折線》）保持 auto: false。
+- **自动选曲（2026-10-25 已接通）**：produce 在合成前按脚本 `bgm_style`
+  查 manifest（`tools/pick-bgm.mjs`），命中 `auto: true`、styles 含该风格、
+  且文件在本机存在的曲子就直接混音出最终版，不再等人工送歌。排序按高潮点
+  与 40 秒的贴合度，前三名里按人物 id 哈希挑一首（同人重渲可复现、人与人
+  分散）。原风格无候选回退默认风格；再无候选才回到等送歌的老流程
+  （Discord 回传或 `--bgm` 指定，`--no-auto-bgm` 可关掉自动选曲）。
+  为某人定制的曲子（如《折線》）不标 styles、保持 auto: false，永不入池。

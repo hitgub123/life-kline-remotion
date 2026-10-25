@@ -126,7 +126,11 @@ setHooks({
     const head = `✅ #${job.seq}「${job.name}」出片了`;
     if (job.resultPath) await sendVideo(ch, job.resultPath, `${head}\n${job.summary || ""}`);
     else await ch.send(`${head}\n${job.summary || ""}`);
-    await ch.send("把 BGM 发给我（mp3/wav 文件）我就合成最终版；不需要的话回复「就这样」。");
+    await ch.send(
+      job.autoBgm
+        ? `🎵 已从曲库自动配乐：${job.autoBgm}，这版就是最终版。想换一首的话，把 BGM 文件发给我就行。`
+        : "把 BGM 发给我（mp3/wav 文件）我就合成最终版；不需要的话回复「就这样」。"
+    );
   },
   async onFail(job) {
     stopHeartbeat(job.seq);
