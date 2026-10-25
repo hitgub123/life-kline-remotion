@@ -9,6 +9,7 @@
     "still": "remotion still LifeKline",
     "gen": "node tools/generate-script.mjs",
     "produce": "node tools/produce.mjs",
+    "agent": "node agent/bot.mjs",
     "music": "node tools/generate-music.mjs",
     "voice": "node tools/make-voice.mjs",
     "mix": "node tools/mix-audio.mjs"
@@ -19,6 +20,7 @@
   "dependencies": {
     "@remotion/cli": "^4.0.538",
     "@remotion/fonts": "^4.0.538",
+    "discord.js": "^14.27.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "remotion": "^4.0.538"
