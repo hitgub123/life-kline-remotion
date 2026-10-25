@@ -7,11 +7,13 @@
 
 1. 每个风格用下面的提示词生成 **2 首**（同一提示词再摇一次即可，天然是两个版本）。
 2. 全部要**纯器乐**：提示词里已写明 no vocals / no lyrics，别删。
-3. 下载后按规则改名，放进 `assets/bgm/`，push 上来即可。
+3. 下载后按规则改名，放进 `assets/bgm/`。**音频不入 git**（已在 .gitignore），
+   留在本地即可，不用 push。
    命名：`<风格id>-01.mp3`、`<风格id>-02.mp3`，例如 `guofeng-epic-01.mp3`。
    文件名前缀就是风格 id，登记和自动选曲都靠它，不要加空格和中文。
-4. 长度不限（混音时裁剪＋淡出）；push 后由 Muse 登记进
-   `assets/bgm/manifest.json` 并实测 BPM 填表。
+4. 长度不限（混音时裁剪＋淡出）。登记方式：把新文件名清单发给 Muse，
+   由它补进 `assets/bgm/manifest.json` 并实测 BPM 填表（BPM 在本地测，
+   可让 agent 跑，或按 docs/ASSETS.md 的说明处理）。
 
 ## 风格与提示词
 

@@ -6,3 +6,10 @@ tools/last-music-response.json
 .env
 agent/state.json
 agent/logs/
+
+# BGM 音频是本地曲库，不入 git（文件大且可持续再生成）；
+# 登记表 manifest.json 是文本台账，保留版本管理，选曲靠它
+assets/*
+!assets/bgm/
+assets/bgm/*
+!assets/bgm/manifest.json

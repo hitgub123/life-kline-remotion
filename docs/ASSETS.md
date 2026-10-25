@@ -27,6 +27,8 @@
   `bgm_style` 并展开成 `bgm_tags`，供 `tools/music-prompt.mjs` 拼作曲提示词。
 - 曲库：`assets/bgm/`，逐首登记在同目录 `manifest.json`
   （file / styles / bpm / mood / auto / note）。
+  **音频文件不入 git**（.gitignore 已排除，曲库只存在于本机）；
+  manifest.json 是文本台账，保留在 git 里，选曲与登记都以它为准。
 - **当前状态（2026-10-25）**：风格是 LLM 选的，但具体曲子还没接自动选——
   produce 不读 manifest，出片后等人工发曲（Discord 回传或 `--bgm` 指定）再补混。
 - 待接的自动选曲：produce 在渲染前按脚本 `bgm_style` 查 manifest，
