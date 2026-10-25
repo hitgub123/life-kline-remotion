@@ -76,9 +76,9 @@ if (!existsSync(scriptPath) || force)
   run("2/6 生成脚本", "node", ["tools/generate-script.mjs", name, "--id", id, "--provider", provider]);
 else console.log("=== 2/6 生成脚本：已存在，跳过 ===");
 
-// 3 审查
-let reviewed = false;
-if (!skipReview) reviewed = tryRun("3/6 事实核查（异源模型）", "node", ["tools/fact-check.mjs", scriptRel]);
+// 3 审查（失败不拦生产，但状态会带进小结，成片未审必须一眼可见）
+let reviewState = "skipped";
+if (!skipReview) reviewState = tryRun("3/6 事实核查（异源模型）", "node", ["tools/fact-check.mjs", scriptRel]) ? "done" : "failed";
 else console.log("=== 3/6 事实核查：按要求跳过 ===");
 
 // 4 渲染
@@ -112,7 +112,7 @@ console.log(`
 ──────── 生产小结 ────────
 人物：${s.subject.name}（${s.subject.birth_year} 年生）
 模板：${s.template || "classic"}　配音音色：${s.voice?.style || "无"}　BGM 风格：${s.bgm_style || "-"}
-事实核查：${s.factcheck ? `${s.factcheck.verdict}（${s.factcheck.by}，问题 ${s.factcheck.issues} 处，详见 src/data/people/${base}.review.md）` : reviewed ? "已审查" : "未审查"}
+事实核查：${s.factcheck ? `${s.factcheck.verdict}（${s.factcheck.by}，问题 ${s.factcheck.issues} 处，详见 src/data/people/${base}.review.md）` : reviewState === "failed" ? "⚠ 审查失败未完成——脚本未经异源核查，发布前请重跑 fact-check" : "未审查（按要求跳过）"}
 产物：${finalVideo.replace(ROOT + "/", "")}${bgm ? "" : "\n（还没配 BGM：曲子下载好后跑下一行补混，不用重渲）"}`);
 if (!bgm) {
   console.log(`音乐提示词: node tools/music-prompt.mjs ${scriptRel}`);
