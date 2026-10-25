@@ -27,7 +27,7 @@
     [
       26,
       35,
-      "美芹十策"
+      "美芹十论"
     ],
     [
       33,
@@ -338,5 +338,12 @@
       "quote": "想当年，金戈铁马，气吞万里如虎",
       "rocket": true
     }
-  ]
+  ],
+  "factcheck": {
+    "by": "gemini/gemini-3.8-flash",
+    "at": "2026-10-25",
+    "verdict": "issues",
+    "issues": 3,
+    "source": "src/data/people/xinqiji.md"
+  }
 }
