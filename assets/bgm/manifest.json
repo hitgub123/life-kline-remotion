@@ -3,7 +3,9 @@
   "tracks": [
     {
       "file": "acoustic-warmth-01.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 71.4,
       "mood": "",
       "auto": false,
@@ -13,7 +15,9 @@
     },
     {
       "file": "acoustic-warmth-02.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 73.2,
       "mood": "",
       "auto": false,
@@ -23,7 +27,9 @@
     },
     {
       "file": "acoustic-warmth-03.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 71.4,
       "mood": "",
       "auto": false,
@@ -33,7 +39,9 @@
     },
     {
       "file": "acoustic-warmth-04.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 121.2,
       "mood": "",
       "auto": false,
@@ -43,7 +51,9 @@
     },
     {
       "file": "acoustic-warmth-05.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 74.1,
       "mood": "",
       "auto": false,
@@ -52,18 +62,10 @@
       "note": ""
     },
     {
-      "file": "acoustic-warmth-06.mp3",
-      "styles": [],
-      "bpm": 120,
-      "mood": "",
-      "auto": false,
-      "duration": 121.4,
-      "climaxAt": 83.8,
-      "note": ""
-    },
-    {
       "file": "acoustic-warmth-07.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 126.3,
       "mood": "",
       "auto": false,
@@ -73,12 +75,62 @@
     },
     {
       "file": "acoustic-warmth-08.mp3",
-      "styles": [],
+      "styles": [
+        "warm-folk"
+      ],
       "bpm": 77.9,
       "mood": "",
       "auto": false,
       "duration": 71.7,
       "climaxAt": 45.3,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-09.mp3",
+      "styles": [
+        "warm-folk"
+      ],
+      "bpm": 74.1,
+      "mood": "",
+      "auto": false,
+      "duration": 75.3,
+      "climaxAt": 44.8,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-10.mp3",
+      "styles": [
+        "warm-folk"
+      ],
+      "bpm": 109.1,
+      "mood": "",
+      "auto": false,
+      "duration": 77.2,
+      "climaxAt": 51.3,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-11.mp3",
+      "styles": [
+        "warm-folk"
+      ],
+      "bpm": 136.4,
+      "mood": "",
+      "auto": false,
+      "duration": 76.4,
+      "climaxAt": 67.3,
+      "note": ""
+    },
+    {
+      "file": "acoustic-warmth-12.mp3",
+      "styles": [
+        "warm-folk"
+      ],
+      "bpm": 121.2,
+      "mood": "",
+      "auto": false,
+      "duration": 72.2,
+      "climaxAt": 55.8,
       "note": ""
     },
     {
@@ -166,8 +218,60 @@
       "note": ""
     },
     {
-      "file": "cyberpunk-drive-03.mp3",
+      "file": "counterattack-epic-01.mp3",
       "styles": [],
+      "bpm": 72.3,
+      "mood": "",
+      "auto": false,
+      "duration": 76.7,
+      "climaxAt": 49.8,
+      "note": ""
+    },
+    {
+      "file": "counterattack-epic-04.mp3",
+      "styles": [],
+      "bpm": 73.2,
+      "mood": "",
+      "auto": false,
+      "duration": 76.4,
+      "climaxAt": 68.3,
+      "note": ""
+    },
+    {
+      "file": "counterattack-epic-05.mp3",
+      "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 75.7,
+      "climaxAt": 30.8,
+      "note": ""
+    },
+    {
+      "file": "counterattack-epic-06.mp3",
+      "styles": [],
+      "bpm": 71.4,
+      "mood": "",
+      "auto": false,
+      "duration": 76,
+      "climaxAt": 40.3,
+      "note": ""
+    },
+    {
+      "file": "counterattack-epic-09.mp3",
+      "styles": [],
+      "bpm": 121.2,
+      "mood": "",
+      "auto": false,
+      "duration": 77,
+      "climaxAt": 68.8,
+      "note": ""
+    },
+    {
+      "file": "cyberpunk-drive-03.mp3",
+      "styles": [
+        "electronic-pulse"
+      ],
       "bpm": 139.5,
       "mood": "",
       "auto": false,
@@ -177,7 +281,9 @@
     },
     {
       "file": "cyberpunk-drive-04.mp3",
-      "styles": [],
+      "styles": [
+        "electronic-pulse"
+      ],
       "bpm": 136.4,
       "mood": "",
       "auto": false,
@@ -270,8 +376,60 @@
       "note": ""
     },
     {
-      "file": "ghibli-nostalgia-01.m4a",
+      "file": "falcom-rock-01.mp3",
       "styles": [],
+      "bpm": 120,
+      "mood": "",
+      "auto": false,
+      "duration": 82.9,
+      "climaxAt": 38.3,
+      "note": ""
+    },
+    {
+      "file": "falcom-rock-02.mp3",
+      "styles": [],
+      "bpm": 75.9,
+      "mood": "",
+      "auto": false,
+      "duration": 74.4,
+      "climaxAt": 13.8,
+      "note": ""
+    },
+    {
+      "file": "falcom-rock-03.mp3",
+      "styles": [],
+      "bpm": 121.2,
+      "mood": "",
+      "auto": false,
+      "duration": 75.6,
+      "climaxAt": 46.8,
+      "note": ""
+    },
+    {
+      "file": "falcom-rock-05.mp3",
+      "styles": [],
+      "bpm": 129,
+      "mood": "",
+      "auto": false,
+      "duration": 77.6,
+      "climaxAt": 59.8,
+      "note": ""
+    },
+    {
+      "file": "falcom-rock-06.mp3",
+      "styles": [],
+      "bpm": 127.7,
+      "mood": "",
+      "auto": false,
+      "duration": 77.9,
+      "climaxAt": 70.3,
+      "note": ""
+    },
+    {
+      "file": "ghibli-nostalgia-01.m4a",
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -281,7 +439,9 @@
     },
     {
       "file": "ghibli-nostalgia-02.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -291,7 +451,9 @@
     },
     {
       "file": "ghibli-nostalgia-03.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -301,7 +463,9 @@
     },
     {
       "file": "ghibli-nostalgia-04_1.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -311,7 +475,9 @@
     },
     {
       "file": "ghibli-nostalgia-04.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 127.7,
       "mood": "",
       "auto": false,
@@ -321,7 +487,9 @@
     },
     {
       "file": "ghibli-nostalgia-05.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 111.1,
       "mood": "",
       "auto": false,
@@ -331,7 +499,9 @@
     },
     {
       "file": "ghibli-nostalgia-06.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 74.1,
       "mood": "",
       "auto": false,
@@ -341,7 +511,9 @@
     },
     {
       "file": "ghibli-nostalgia-07.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -351,7 +523,9 @@
     },
     {
       "file": "ghibli-nostalgia-08.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 73.2,
       "mood": "",
       "auto": false,
@@ -361,7 +535,9 @@
     },
     {
       "file": "ghibli-nostalgia-09.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 125,
       "mood": "",
       "auto": false,
@@ -371,7 +547,9 @@
     },
     {
       "file": "ghibli-nostalgia-10.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -381,7 +559,9 @@
     },
     {
       "file": "ghibli-nostalgia-11.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 137.9,
       "mood": "",
       "auto": false,
@@ -391,7 +571,9 @@
     },
     {
       "file": "ghibli-nostalgia-12.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 134.8,
       "mood": "",
       "auto": false,
@@ -401,7 +583,9 @@
     },
     {
       "file": "ghibli-nostalgia-13.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 120,
       "mood": "",
       "auto": false,
@@ -411,7 +595,9 @@
     },
     {
       "file": "ghibli-nostalgia-14.m4a",
-      "styles": [],
+      "styles": [
+        "hisaishi-style"
+      ],
       "bpm": 133.3,
       "mood": "",
       "auto": false,
