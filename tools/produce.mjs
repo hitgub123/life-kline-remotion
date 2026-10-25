@@ -13,8 +13,8 @@
  * 本机需装好 edge-tts（配音）。BGM 不给 --bgm 时：先出带配音的成片，并打印
  * 音乐提示词与补混命令，等曲子下载好后一条命令补上（不用重渲）。
  */
-import { execFileSync, execSync } from "node:child_process";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { readFileSync, existsSync, statSync, createWriteStream, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -52,13 +52,39 @@ const videoPath = join(ROOT, "out", `${base}.mp4`);
 const voicePath = join(ROOT, "out", `${base}-voice.wav`);
 const finalPath = join(ROOT, "out", `${base}-final.mp4`);
 
-function run(label, cmd, cmdArgs) {
-  console.log(`\n=== ${label} ===`);
-  execFileSync(cmd, cmdArgs, { stdio: "inherit", cwd: ROOT });
+// 运行日志：全程输出（每步标题+子工具输出+小结）同步落盘到 out/logs/，
+// 事后可查「哪一步发生了什么」；小结里会打印日志路径，agent 转达时也能看到。
+const logsDir = join(ROOT, "out", "logs");
+mkdirSync(logsDir, { recursive: true });
+const _d = new Date();
+const _pad = (n) => String(n).padStart(2, "0");
+const logPath = join(
+  logsDir,
+  `${base}-${_d.getFullYear()}${_pad(_d.getMonth() + 1)}${_pad(_d.getDate())}-${_pad(_d.getHours())}${_pad(_d.getMinutes())}${_pad(_d.getSeconds())}.log`
+);
+const logStream = createWriteStream(logPath, { flags: "a" });
+const _log = console.log.bind(console);
+const _warn = console.warn.bind(console);
+console.log = (...a) => { _log(...a); logStream.write(a.join(" ") + "\n"); };
+console.warn = (...a) => { _warn(...a); logStream.write(a.join(" ") + "\n"); };
+
+function runCmd(label, cmd, cmdArgs, { shell = false } = {}) {
+  return new Promise((resolve, reject) => {
+    console.log(`\n=== ${label} ===`);
+    const child = spawn(cmd, cmdArgs, { cwd: ROOT, shell });
+    const onData = (d) => { process.stdout.write(d); logStream.write(d); };
+    child.stdout.on("data", onData);
+    child.stderr.on("data", onData);
+    child.on("error", reject);
+    child.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`${label} 失败（exit ${code}）`))));
+  });
 }
-function tryRun(label, cmd, cmdArgs) {
+async function run(label, cmd, cmdArgs, opts) {
+  await runCmd(label, cmd, cmdArgs, opts);
+}
+async function tryRun(label, cmd, cmdArgs, opts) {
   try {
-    run(label, cmd, cmdArgs);
+    await runCmd(label, cmd, cmdArgs, opts);
     return true;
   } catch {
     console.warn(`⚠ ${label}失败，继续后续步骤（可单独重跑该步）`);
@@ -68,30 +94,29 @@ function tryRun(label, cmd, cmdArgs) {
 
 // 1 取材
 if (!existsSync(join(ROOT, "src/data/people", base + ".md")) || force)
-  run("1/6 取材（维基百科）", "node", ["tools/fetch-person.mjs", name, "--id", id, ...(force ? ["--force"] : [])]);
+  await run("1/6 取材（维基百科）", "node", ["tools/fetch-person.mjs", name, "--id", id, ...(force ? ["--force"] : [])]);
 else console.log("=== 1/6 取材：已有资料，跳过 ===");
 
 // 2 生成
 if (!existsSync(scriptPath) || force)
-  run("2/6 生成脚本", "node", ["tools/generate-script.mjs", name, "--id", id, "--provider", provider]);
+  await run("2/6 生成脚本", "node", ["tools/generate-script.mjs", name, "--id", id, "--provider", provider]);
 else console.log("=== 2/6 生成脚本：已存在，跳过 ===");
 
 // 3 审查（失败不拦生产，但状态会带进小结，成片未审必须一眼可见）
 let reviewState = "skipped";
-if (!skipReview) reviewState = tryRun("3/6 事实核查（异源模型）", "node", ["tools/fact-check.mjs", scriptRel]) ? "done" : "failed";
+if (!skipReview) reviewState = (await tryRun("3/6 事实核查（异源模型）", "node", ["tools/fact-check.mjs", scriptRel])) ? "done" : "failed";
 else console.log("=== 3/6 事实核查：按要求跳过 ===");
 
 // 4 渲染
 const stale = existsSync(videoPath) && existsSync(scriptPath) && statSync(videoPath).mtimeMs < statSync(scriptPath).mtimeMs;
 if (!existsSync(videoPath) || force || stale) {
-  console.log("\n=== 4/6 渲染视频 ===");
-  execSync(`npx remotion render ${id} out/${base}.mp4`, { stdio: "inherit", cwd: ROOT });
+  await run("4/6 渲染视频", "npx", ["remotion", "render", id, `out/${base}.mp4`], { shell: process.platform === "win32" });
 } else console.log("=== 4/6 渲染：成片已是最新，跳过 ===");
 
 // 5 配音
 let voiceMade = existsSync(voicePath) && !force;
 if (!skipVoice && !voiceMade)
-  voiceMade = tryRun("5/6 生成头尾配音", "node", [
+  voiceMade = await tryRun("5/6 生成头尾配音", "node", [
     "tools/make-voice.mjs", scriptRel, "--video", `out/${base}.mp4`, "--out", `out/${base}-voice.wav`,
   ]);
 if (skipVoice) console.log("=== 5/6 配音：按要求跳过 ===");
@@ -103,7 +128,7 @@ if (bgm) {
   if (bgmOffset) mixArgs.push("--bgm-offset", bgmOffset);
 }
 if (voiceMade) mixArgs.push("--voice", `out/${base}-voice.wav`);
-if (bgm || voiceMade) run("6/6 合成", "node", ["tools/mix-audio.mjs", ...mixArgs]);
+if (bgm || voiceMade) await run("6/6 合成", "node", ["tools/mix-audio.mjs", ...mixArgs]);
 else console.log("=== 6/6 合成：无配音无 BGM，最终产物即渲染文件 ===");
 
 const finalVideo = bgm || voiceMade ? finalPath : videoPath;
@@ -113,7 +138,8 @@ console.log(`
 人物：${s.subject.name}（${s.subject.birth_year} 年生）
 模板：${s.template || "classic"}　配音音色：${s.voice?.style || "无"}　BGM 风格：${s.bgm_style || "-"}
 事实核查：${s.factcheck ? `${s.factcheck.verdict}（${s.factcheck.by}，问题 ${s.factcheck.issues} 处，详见 src/data/people/${base}.review.md）` : reviewState === "failed" ? "⚠ 审查失败未完成——脚本未经异源核查，发布前请重跑 fact-check" : "未审查（按要求跳过）"}
-产物：${finalVideo.replace(ROOT + "/", "")}${bgm ? "" : "\n（还没配 BGM：曲子下载好后跑下一行补混，不用重渲）"}`);
+产物：${finalVideo.replace(ROOT + "/", "")}
+日志：${logPath.replace(ROOT + "/", "")}${bgm ? "" : "\n（还没配 BGM：曲子下载好后跑下一行补混，不用重渲）"}`);
 if (!bgm) {
   console.log(`音乐提示词: node tools/music-prompt.mjs ${scriptRel}`);
   console.log(`补混命令:   node tools/mix-audio.mjs out/${base}.mp4 --bgm <曲子文件>${voiceMade ? ` --voice out/${base}-voice.wav` : ""} --out out/${base}-final.mp4`);
