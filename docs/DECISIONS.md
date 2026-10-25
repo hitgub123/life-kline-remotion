@@ -79,3 +79,8 @@
 - 作者试听后决定（原话）：「不考虑男性的声音」。男声档案（yunyang/yunjian/yunxi/elder/documentary）保留在音色库里（老脚本兼容）但标注停用，生成器不再选。
 - 女声阵容：edge 晓晓、晓菡 + Gemini 新增纪录片女声（documentary-f，Kore）与温润讲述女声（warm-f，Sulafat）；默认暂定 documentary-f，听审后再定正式默认。
 - 附带诊断：作者机器上 edge 引擎试音全灭（原因被旧版试音工具的报错截断掩盖）；audition-voice 已加 edge 预检（装没装＋真合成一句），失败原因能直接说清。
+
+## 2026-10-25 · 配音选角结果：定版晓晓
+
+- 作者试听四把女声候选（晓晓、晓菡、Gemini 纪录片女声、Gemini 温润女声）后裁决（原话）：「只有 xiaoxiao 是女声，compact 那个还行」——定版 xiaoxiao（zh-CN-XiaoxiaoNeural）为唯一常用音色兼默认，其余候选一并停用。
+- 至此配音阵容收敛为单音色：脚本 voice.style 实际只会落到 xiaoxiao；日后想重开选角，改 voice-profiles.json 的停用标注即可。
