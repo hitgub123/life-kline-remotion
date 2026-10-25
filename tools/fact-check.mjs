@@ -41,20 +41,31 @@ if (!scriptPath) {
   console.error("用法: node tools/fact-check.mjs src/data/xxx.json [--provider deepseek|opencode|gemini] [--model 模型名]");
   process.exit(1);
 }
-const provider = flag(
-  "provider",
-  process.env.DEEPSEEK_API_KEY ? "deepseek" : process.env.OPENCODE_API_KEY ? "opencode" : "gemini"
-);
-const model = flag(
-  "model",
-  provider === "deepseek" ? "deepseek-chat" : provider === "opencode" ? "deepseek-v4-flash-free" : "gemini-3.8-flash"
-);
+const pinnedProvider = flag("provider", null);
+const pinnedModel = flag("model", null);
+const DEFAULT_MODELS = {
+  deepseek: "deepseek-chat",
+  opencode: "deepseek-v4-flash-free",
+  gemini: "gemini-3.8-flash",
+};
+const KEY_ENVS = {
+  deepseek: "DEEPSEEK_API_KEY",
+  opencode: "OPENCODE_API_KEY",
+  gemini: "GEMINI_API_KEY",
+};
 // OpenAI 兼容通道：deepseek 是官方接口；opencode 是 OpenCode Zen 网关
 // （key 在 opencode.ai 领，免费层有 DeepSeek 系模型，名单会轮换，模型名可 --model 换）
 const OPENAI_COMPAT = {
   deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
   opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
 };
+// 审查方接力顺序：官方 DeepSeek → OpenCode Zen → Gemini。
+// 不指定 --provider 时按此顺序自动跳过失败的（没余额/限流/模型下架），
+// 用谁审的就盖谁的章；指定 --provider 则只用那一家，方便定位问题。
+function candidates() {
+  if (pinnedProvider) return [pinnedProvider];
+  return ["deepseek", "opencode", "gemini"].filter((p) => process.env[KEY_ENVS[p]]);
+}
 const base = basename(scriptPath).replace(/\.json$/, "");
 const script = JSON.parse(readFileSync(scriptPath, "utf8"));
 const personName = script.subject?.name || base;
@@ -92,12 +103,13 @@ ${dossier}
 脚本 JSON：
 ${JSON.stringify(script)}`;
 
-async function callReviewer(prompt) {
+async function callOne(p, prompt) {
+  const model = pinnedModel || DEFAULT_MODELS[p];
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 240000);
   try {
-    if (OPENAI_COMPAT[provider]) {
-      const { base, keyEnv } = OPENAI_COMPAT[provider];
+    if (OPENAI_COMPAT[p]) {
+      const { base, keyEnv } = OPENAI_COMPAT[p];
       const key = process.env[keyEnv];
       if (!key) throw new Error(`缺环境变量 ${keyEnv}`);
       const res = await fetch(`${base}/chat/completions`, {
@@ -111,7 +123,7 @@ async function callReviewer(prompt) {
           temperature: 0.2,
         }),
       });
-      if (!res.ok) throw new Error(`${provider} API ${res.status}: ${await res.text()}`);
+      if (!res.ok) throw new Error(`${p} API ${res.status}: ${await res.text()}`);
       return (await res.json()).choices[0].message.content;
     }
     const key = process.env.GEMINI_API_KEY;
@@ -136,6 +148,25 @@ async function callReviewer(prompt) {
   }
 }
 
+async function callReviewer(prompt) {
+  const list = candidates();
+  if (!list.length)
+    throw new Error("没有任何可用的审查 key：DEEPSEEK_API_KEY / OPENCODE_API_KEY / GEMINI_API_KEY 至少配一个");
+  let lastErr = null;
+  for (const p of list) {
+    const model = pinnedModel || DEFAULT_MODELS[p];
+    console.log(`审查中（${p}/${model}，对照 ${base}.md）……`);
+    try {
+      const text = await callOne(p, prompt);
+      return { text, provider: p, model };
+    } catch (e) {
+      lastErr = e;
+      console.warn(`⚠ ${p} 调用失败：${String(e.message).slice(0, 220)}${list.length > 1 ? "，自动换下一家" : ""}`);
+    }
+  }
+  throw lastErr;
+}
+
 function extractJson(text) {
   const t = text.replace(/```json|```/g, "");
   const s = t.indexOf("{");
@@ -157,8 +188,7 @@ function applyPatch(root, patch) {
   return { ok: true };
 }
 
-console.log(`审查中（${provider}/${model}，对照 ${base}.md）……`);
-const raw = await callReviewer(PROMPT);
+const { text: raw, provider: usedProvider, model: usedModel } = await callReviewer(PROMPT);
 let verdict;
 try {
   verdict = extractJson(raw);
@@ -175,7 +205,7 @@ for (const p of verdict.patches || []) {
   (r.ok ? applied : skipped).push({ ...p, ...(r.ok ? {} : { why: r.why }) });
 }
 script.factcheck = {
-  by: `${provider}/${model}`,
+  by: `${usedProvider}/${usedModel}`,
   at: new Date().toISOString().slice(0, 10),
   verdict: issues.length ? "issues" : "pass",
   issues: issues.length,
@@ -185,7 +215,7 @@ writeFileSync(scriptPath, JSON.stringify(script, null, 2) + "\n");
 const lines = [
   `# ${personName} · 事实核查报告`,
   ``,
-  `- 审查方：${provider}/${model}，对照维基资料 src/data/people/${base}.md`,
+  `- 审查方：${usedProvider}/${usedModel}，对照维基资料 src/data/people/${base}.md`,
   `- 结论：${issues.length ? `发现 ${issues.length} 处问题` : "未发现事实问题"}；已自动修正 ${applied.length} 处${skipped.length ? `，${skipped.length} 处补丁未应用` : ""}`,
   ``,
 ];
