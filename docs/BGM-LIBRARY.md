@@ -46,6 +46,18 @@ Instrumental cinematic piano score, solo grand piano with a soft string ensemble
 Instrumental epic orchestral score, soaring strings, heroic French horns and brass, thunderous cinematic drums and taiko hits, fast driving rhythm, 132 BPM. Around 75 seconds in total: powerful drum-and-strings intro for 8 seconds, the theme builds from 0:10, main triumphant climax with the full orchestra at full force at 0:30 to 0:40, stay intense and uplifting, one final even bigger lift around 0:55, ending on a glorious sustained chord. No vocals, no lyrics, no choir.
 ```
 
+### trails-battle（轨迹燃曲 · JRPG 战斗）
+适用：热血人物、战斗型人生、强推进感叙事。
+```
+Instrumental JRPG battle theme in the style of Falcom's Trails series (Trails in the Sky, Trails from Zero), soaring violin lead melody over a driving rock band — electric guitar riffs, punchy bass, fast drums — with energetic piano runs, heroic and burning with fighting spirit, 150 BPM. Around 75 seconds in total: explosive full-band intro for 8 seconds, the violin theme races ahead from 0:10, main climax with violin and guitar trading the heroic melody at full power at 0:30 to 0:40, stay relentless, one final lift around 0:55, ending on a triumphant sustained chord. No vocals, no lyrics.
+```
+
+### xenoblade-epic（异刃史诗 · 管弦摇滚）
+适用：史诗转折、绝境反击、压倒性高潮的题材。
+```
+Instrumental epic orchestral-rock in the style of Xenoblade Chronicles 2's "Counterattack", dramatic sweeping strings, powerful brass, thunderous drums and electric guitar, with a full choir chanting wordless syllables, cinematic and emotionally overwhelming, 140 BPM. Around 75 seconds in total: urgent strings-and-drums intro for 10 seconds, brass and choir build from 0:10, main climax with full orchestra, choir and guitar at maximum intensity at 0:30 to 0:40, stay soaring, one final even grander lift around 0:55, ending on a resounding final chord. Choir is wordless chanting only — no lyrics, no solo singing.
+```
+
 ### hisaishi-style（久石让风 · 天空/成长）
 适用：成长、回忆、治愈而昂扬的人物；文人、科学家也搭。
 ```
