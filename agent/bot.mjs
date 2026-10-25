@@ -155,11 +155,22 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "make") {
       const name = interaction.options.getString("name");
       const id = interaction.options.getString("id") || findIdByName(name);
-      if (!id)
-        return interaction.reply({
-          content: `我不知道「${name}」的英文标识，请带上 id 再试（如 /make name:${name} id:SuShi），或直接私信我用中文说，我来拼。`,
-          ephemeral: true,
+      if (!id) {
+        // 目录里查不到这个名字：客人保持确定性拒绝；主人转交大脑，
+        // 由它拼英文标识并派单（与私信用中文派活同一条路，不用记 id）
+        if (!isOwner(interaction.user.id))
+          return interaction.reply({
+            content: `我不知道「${name}」的英文标识，请带上 id 再试（如 /make name:${name} id:SuShi）。`,
+            ephemeral: true,
+          });
+        await interaction.deferReply();
+        const answer = await chat(interaction.channelId, `（主人用 /make 点名）请为「${name}」生产一条视频，英文标识由你决定并调用 make_video 派单。`, {
+          userId: interaction.user.id,
+          isOwner: true,
+          channelId: interaction.channelId,
         });
+        return interaction.editReply(answer.slice(0, 1900));
+      }
       if (!isOwner(interaction.user.id)) {
         const q = guestQuota(interaction.user.id);
         if (!q.ok) return interaction.reply({ content: "演示模式今日 live 限量已满。", ephemeral: true });
