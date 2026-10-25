@@ -46,7 +46,7 @@ const model =
   (provider === "deepseek"
     ? "deepseek-chat"
     : provider === "opencode"
-      ? "deepseek-v4.1-flash-free"
+      ? "deepseek-v4-flash"
       : "gemini-3.8-flash");
 
 if (!name || !id) {

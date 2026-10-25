@@ -45,7 +45,7 @@ const pinnedProvider = flag("provider", null);
 const pinnedModel = flag("model", null);
 const DEFAULT_MODELS = {
   deepseek: "deepseek-chat",
-  opencode: "deepseek-v4.1-flash-free",
+  opencode: "deepseek-v4-flash",
   gemini: "gemini-3.8-flash",
 };
 const KEY_ENVS = {
@@ -54,19 +54,17 @@ const KEY_ENVS = {
   gemini: "GEMINI_API_KEY",
 };
 // OpenAI 兼容通道：deepseek 是官方接口；opencode 是 OpenCode Zen 网关
-// （key 在 opencode.ai 领，免费层有 DeepSeek 系模型，名单会轮换，模型名可 --model 换）
+// （key 在 opencode.ai 领；注意 Zen 免费模型禁止外部调用，只能用付费模型吃余额）
 const OPENAI_COMPAT = {
   deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
   opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
 };
-// 审查方接力顺序：官方 DeepSeek → Gemini。
+// 审查方接力顺序：官方 DeepSeek → Zen 付费 DeepSeek → Gemini。
 // 不指定 --provider 时按此顺序自动跳过失败的（没余额/限流），用谁审的就盖谁的章；
 // 指定 --provider 则只用那一家，方便定位问题。
-// 注：opencode 不进自动接力——Zen 免费模型自 2026-09 起只许在 OpenCode 应用内
-// 调用，外部直连一律 403 FreeTierError；手动 --provider opencode 可用 Zen 付费模型。
 function candidates() {
   if (pinnedProvider) return [pinnedProvider];
-  return ["deepseek", "gemini"].filter((p) => process.env[KEY_ENVS[p]]);
+  return ["deepseek", "opencode", "gemini"].filter((p) => process.env[KEY_ENVS[p]]);
 }
 const base = basename(scriptPath).replace(/\.json$/, "");
 const script = JSON.parse(readFileSync(scriptPath, "utf8"));
@@ -149,38 +147,13 @@ async function callOne(p, model, prompt) {
   }
 }
 
-// Zen 的免费模型名单会轮换改名（如 v4-flash-free → v4.1-flash-free）：
-// 运行时拉实时名单（该接口免 key），把在架免费模型按偏好排序挨个试，自愈。
-const ZEN_FALLBACK_FREE = [
-  "deepseek-v4.1-flash-free",
-  "deepseek-v4-flash-free",
-  "glm-5.3-flash-free",
-  "mimo-v2.6-flash-free",
-];
-async function zenFreeModels() {
-  try {
-    const res = await fetch("https://opencode.ai/zen/v1/models", {
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) throw new Error(String(res.status));
-    const ids = (await res.json()).data.map((m) => m.id).filter((id) => id.endsWith("-free"));
-    const rank = (id) =>
-      id.startsWith("deepseek-") ? 0 : id.startsWith("glm-") ? 1 : id.startsWith("qwen") ? 2 : id.startsWith("mimo-") ? 3 : id.startsWith("minimax-") ? 4 : 5;
-    ids.sort((a, b) => rank(a) - rank(b));
-    return ids.length ? ids : ZEN_FALLBACK_FREE;
-  } catch {
-    return ZEN_FALLBACK_FREE;
-  }
-}
-
 async function callReviewer(prompt) {
   const list = candidates();
   if (!list.length)
     throw new Error("没有任何可用的审查 key：DEEPSEEK_API_KEY / OPENCODE_API_KEY / GEMINI_API_KEY 至少配一个");
   let lastErr = null;
   for (const p of list) {
-    const models =
-      p === "opencode" && !pinnedModel ? await zenFreeModels() : [pinnedModel || DEFAULT_MODELS[p]];
+    const models = [pinnedModel || DEFAULT_MODELS[p]];
     for (const model of models) {
       console.log(`审查中（${p}/${model}，对照 ${base}.md）……`);
       try {
