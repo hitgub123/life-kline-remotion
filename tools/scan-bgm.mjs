@@ -138,9 +138,15 @@ if (existsSync(MANIFEST)) {
 }
 if (!Array.isArray(manifest.tracks)) manifest.tracks = [];
 const byFile = new Map(manifest.tracks.map((t) => [t.file, t]));
+// 清理：文件已删/改名的旧条目移除（改名后跑一次扫描即自动对齐）
+for (const t of manifest.tracks)
+  if (!files.includes(t.file)) console.log(`（条目已移除：${t.file}，文件不在曲库里了）`);
+for (const k of [...byFile.keys()]) if (!files.includes(k)) byFile.delete(k);
 
 console.log(`曲库扫描（${files.length} 首）：`);
 for (const f of files) {
+  if (/[\s()（）]/.test(f))
+    console.log(`⚠ 文件名不合规：${f}——含空格或括号，命令行里容易断词，建议改成无空格的名字（如 折線-v2.mp3）后重跑扫描`);
   const path = join(BGM_DIR, f);
   const dur = probeDuration(path);
   const ana = analyze(path);

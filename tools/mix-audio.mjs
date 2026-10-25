@@ -46,6 +46,7 @@ if (!video || (!bgm && !voice)) {
 for (const f of [video, bgm, voice].filter(Boolean))
   if (!existsSync(f)) {
     console.error("文件不存在:", f);
+    console.error("（路径含空格或括号时，命令行里要用引号把整个路径括起来，如 --bgm \"折線 (Version 2).mp3\"；长远看文件名别用空格，见 docs/BGM-LIBRARY.md）");
     process.exit(1);
   }
 
