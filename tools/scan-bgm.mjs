@@ -32,6 +32,13 @@ try {
   const cat = JSON.parse(readFileSync(join(ROOT, "tools", "bgm-styles.json"), "utf8"));
   styleIds = Object.keys(cat.styles || {}).filter((k) => k !== "default");
 } catch {}
+// 生成工具自带的名字 → 目录风格 id（作者实际生成时的文件名前缀与目录 id 不一致，
+// 靠这张别名表把 styles 补齐，自动选曲读的是 styles 字段。映射错了改这里即可。）
+const PREFIX_ALIASES = {
+  "ghibli-nostalgia": "hisaishi-style",
+  "acoustic-warmth": "warm-folk",
+  "cyberpunk-drive": "electronic-pulse",
+};
 
 function probeDuration(file) {
   try {
@@ -151,7 +158,10 @@ for (const f of files) {
   const dur = probeDuration(path);
   const ana = analyze(path);
   const prev = byFile.get(f) || {};
-  const styleHit = styleIds.find((id) => f.startsWith(id + "-")) || null;
+  const styleHit =
+    styleIds.find((id) => f.startsWith(id + "-")) ||
+    (Object.entries(PREFIX_ALIASES).find(([p]) => f.startsWith(p + "-")) || [])[1] ||
+    null;
   const entry = {
     file: f,
     styles: prev.styles && prev.styles.length ? prev.styles : styleHit ? [styleHit] : [],
