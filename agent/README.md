@@ -49,7 +49,7 @@ node agent/bot.mjs --dry-run   # 只自检配置与演示目录，不连接 Disc
    Discord 里命令「未响应」＝进程没在跑（或刚死），先按 1、2 查。
 4. **「大脑调用失败（503/网络错误）」**：Gemini 服务端过载或请求超时，临时故障，
    不是 key 或代码问题。大脑已内置退避重试（单次上限 30 秒、共 3 次）与备用模型
-   自动切换（gemini-3.5-flash-lite，超时/网络错误同样触发）；还失败就等几分钟再发一次。
+   自动切换到 DeepSeek Flash 备用（Zen 的 deepseek-v4-flash，超时/网络错误同样触发）；还失败就等几分钟再发一次。
    注意：gemini-2.5-flash 已被谷歌对新用户下线（404），不要再把它设成 BRAIN_MODEL；
    选主力/备用前先跑 `node tools/probe-gemini.mjs --list` 看这把 key 的可用名单。
    日志里搜「大脑」能看到每次失败的状态与是否切了备用模型。

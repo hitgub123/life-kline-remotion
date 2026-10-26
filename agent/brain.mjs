@@ -133,10 +133,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // 谷歌的过载是暂时的，不该让一次抖动废掉整条命令；4xx 请求错误不重试。
 // 单次上限 30 秒：大脑只是理解人话派活，正常几秒就回，挂过 30 秒就是上游出事，
 // 早点判死刑去重试/切备用，别让用户干等（曾出现 3 次 90 秒超时烧掉 7 分钟的事故）。
-// 备用模型按 2026-10-26 用 probe-gemini --list 实测的 key 可用名单选：
-// gemini-2.5-flash 已被谷歌对新用户下线（404），教训是备用必须实测、不能凭记忆；
-// lite 是独立服务池，与主模型错峰，主模型高 demand 时它通常可用。
-const FALLBACK_MODEL = "gemini-3.5-flash-lite";
+// 主模型倒下时的备用不在 Gemini 家里换，而是跨厂切 DeepSeek Flash
+// （见下方 DeepSeek 备用通道；口径：模型只用 Gemini 3.8 与 DeepSeek Flash 两家）。
 async function callBrain(model, bodyObj) {
   let lastStatus = 0;
   let lastErr = null;
@@ -165,6 +163,114 @@ async function callBrain(model, bodyObj) {
   return { ok: false, status: lastStatus, error: lastErr };
 }
 
+// ---------- DeepSeek 备用通道（OpenAI 方言翻译层） ----------
+// 主模型（Gemini）倒下时，把 Gemini 格式的对话历史翻译成 OpenAI 格式，
+// 经 OpenCode Zen 调 deepseek-v4-flash 把这一轮跑完。工具执行仍走同一个
+// executeTool；DS 轮次的工具调用细节不回写 Gemini 历史（只回写最终答复），
+// 任务状态在 jobs 落盘、不靠对话历史，所以无损。
+function lowerTypes(node) {
+  if (Array.isArray(node)) return node.map(lowerTypes);
+  if (node && typeof node === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(node))
+      out[k] = k === "type" && typeof v === "string" ? v.toLowerCase() : lowerTypes(v);
+    return out;
+  }
+  return node;
+}
+export function toOpenAiTools() {
+  return TOOLS.map((t) => ({
+    type: "function",
+    function: { name: t.name, description: t.description, parameters: lowerTypes(t.parameters) },
+  }));
+}
+export function toOpenAiMessages(history) {
+  const msgs = [{ role: "system", content: SYSTEM }];
+  let callSeq = 0;
+  const pendingIds = [];
+  for (const entry of history) {
+    const parts = entry.parts || [];
+    if (entry.role === "user" && parts.some((p) => p.functionResponse)) {
+      for (const p of parts) {
+        if (p.functionResponse)
+          msgs.push({
+            role: "tool",
+            tool_call_id: pendingIds.shift() || `call_${callSeq++}`,
+            content: String(p.functionResponse.response?.result ?? ""),
+          });
+        else if (p.text) msgs.push({ role: "user", content: p.text });
+      }
+      continue;
+    }
+    const text = parts.filter((p) => p.text).map((p) => p.text).join("");
+    const calls = parts.filter((p) => p.functionCall);
+    if (entry.role === "model" && calls.length) {
+      const tool_calls = calls.map((p) => {
+        const id = `call_${callSeq++}`;
+        pendingIds.push(id);
+        return { id, type: "function", function: { name: p.functionCall.name, arguments: JSON.stringify(p.functionCall.args || {}) } };
+      });
+      msgs.push({ role: "assistant", content: text || null, tool_calls });
+    } else if (text) {
+      msgs.push({ role: entry.role === "model" ? "assistant" : "user", content: text });
+    }
+  }
+  // 历史被截断时可能留下没有对应调用的孤儿 tool 消息，接口会拒收，丢掉
+  while (msgs[1] && msgs[1].role === "tool") msgs.splice(1, 1);
+  return msgs;
+}
+
+async function callDeepSeek(messages, ctx) {
+  // 返回最终文本；失败返回 null。工具调用就地执行、结果续进 messages。
+  for (let round = 0; round < 6; round++) {
+    let data = null;
+    let lastStatus = 0;
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3 && !data; attempt++) {
+      if (attempt) await sleep([1500, 4000][attempt - 1]);
+      try {
+        const res = await fetch("https://opencode.ai/zen/v1/chat/completions", {
+          method: "POST",
+          signal: AbortSignal.timeout(30000),
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${CFG.opencodeKey}` },
+          body: JSON.stringify({ model: CFG.deepseekFlashModel, messages, tools: toOpenAiTools(), temperature: 0.4 }),
+        });
+        if (res.ok) data = await res.json();
+        else {
+          lastStatus = res.status;
+          if (![429, 500, 502, 503, 504].includes(res.status)) break;
+        }
+      } catch (e) {
+        lastErr = e;
+        lastStatus = 0;
+      }
+    }
+    if (!data) {
+      logError(`DeepSeek 备用调用失败：模型 ${CFG.deepseekFlashModel}，末次状态 ${lastStatus || "网络错误"}${lastErr ? "，" + lastErr.message : ""}`);
+      return null;
+    }
+    const msg = data.choices?.[0]?.message;
+    if (!msg) return null;
+    messages.push(msg);
+    const calls = msg.tool_calls || [];
+    if (!calls.length) return (msg.content || "").trim() || "好的。";
+    for (const c of calls) {
+      let a = {};
+      try {
+        a = JSON.parse(c.function?.arguments || "{}");
+      } catch {}
+      let result;
+      try {
+        result = executeTool(c.function?.name, a, ctx);
+      } catch (e) {
+        result = `工具执行失败：${e.message}`;
+      }
+      messages.push({ role: "tool", tool_call_id: c.id, content: String(result) });
+    }
+  }
+  return "这一轮调用的工具太多了，我先停一下，请把需求拆开再说一次。";
+}
+
 const histories = new Map();
 export async function chat(channelKey, userText, ctx) {
   if (!CFG.geminiKey) return "大脑没接好：缺 GEMINI_API_KEY 配置。";
@@ -178,21 +284,21 @@ export async function chat(channelKey, userText, ctx) {
     tools: [{ functionDeclarations: TOOLS }],
     generationConfig: { temperature: 0.4 },
   });
-  let model = CFG.brainModel;
-  let fellBack = false;
   try {
   for (let round = 0; round < 6; round++) {
-    let r = await callBrain(model, body());
-    // 切备用的条件：除 400/401/403（请求或 key 的问题，换模型也没用）外都切——
-    // 含超时与网络错误（状态 0），事故教训：上游「挂住不回」比回 503 更常见。
-    if (!r.ok && !fellBack && model !== FALLBACK_MODEL && ![400, 401, 403].includes(r.status)) {
-      fellBack = true;
-      logError(`大脑主模型 ${model} 不可用（${r.status || "网络错误"}），切备用模型 ${FALLBACK_MODEL}`);
-      model = FALLBACK_MODEL;
-      r = await callBrain(model, body());
-    }
+    const r = await callBrain(CFG.brainModel, body());
     if (!r.ok) {
-      return `大脑调用失败（${r.status || "网络错误"}，模型 ${model}${fellBack ? "，已切备用模型仍失败" : ""}，已自动重试多次），请稍后再试。`;
+      // 主模型倒下（除 key/请求类 4xx 外）：跨厂切 DeepSeek Flash 把这一轮跑完
+      if (CFG.opencodeKey && ![400, 401, 403].includes(r.status)) {
+        logError(`大脑主模型 ${CFG.brainModel} 失败（${r.status || "网络错误"}），切 DeepSeek 备用（${CFG.deepseekFlashModel}）`);
+        const dsText = await callDeepSeek(toOpenAiMessages(history.slice(-24)), ctx);
+        if (dsText) {
+          history.push({ role: "model", parts: [{ text: dsText }] });
+          histories.set(channelKey, history);
+          return dsText;
+        }
+      }
+      return `大脑调用失败（${r.status || "网络错误"}，模型 ${CFG.brainModel}，已自动重试多次${CFG.opencodeKey ? "，DeepSeek 备用也未通" : ""}），请稍后再试。`;
     }
     const j = r.json;
     const content = j.candidates?.[0]?.content;

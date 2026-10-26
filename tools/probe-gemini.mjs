@@ -11,9 +11,31 @@
 import { CFG } from "../agent/config.mjs";
 
 const wanted = process.argv.slice(2);
-if (!CFG.geminiKey) {
+if (!CFG.geminiKey && wanted[0] !== "deepseek") {
   console.error("缺 GEMINI_API_KEY（仓库根目录 .env），没法测。");
   process.exit(1);
+}
+if (wanted[0] === "deepseek") {
+  // 大脑备用通道体检：Zen 上的 DeepSeek Flash 回不回话
+  if (!CFG.opencodeKey) {
+    console.error("缺 OPENCODE_API_KEY（.env），没法测 DeepSeek 通道。");
+    process.exit(1);
+  }
+  const t0 = Date.now();
+  try {
+    const res = await fetch("https://opencode.ai/zen/v1/chat/completions", {
+      method: "POST",
+      signal: AbortSignal.timeout(20000),
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${CFG.opencodeKey}` },
+      body: JSON.stringify({ model: CFG.deepseekFlashModel, messages: [{ role: "user", content: "hi" }] }),
+    });
+    const text = await res.text();
+    console.log(`deepseek（Zen/${CFG.deepseekFlashModel}）：状态 ${res.status}，耗时 ${Date.now() - t0}ms`);
+    console.log(`  响应开头：${text.slice(0, 200).replace(/\s+/g, " ")}`);
+  } catch (e) {
+    console.log(`deepseek（Zen/${CFG.deepseekFlashModel}）：网络错误，耗时 ${Date.now() - t0}ms，${e.message}`);
+  }
+  process.exit(0);
 }
 if (wanted[0] === "--list") {
   const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000", {

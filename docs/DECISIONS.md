@@ -90,3 +90,9 @@
 - produce 合成前自动选曲（tools/pick-bgm.mjs）：按脚本 bgm_style 查曲库登记表，入池条件 = auto:true + styles 命中 + 文件在本机；按高潮贴合度（目标 40 秒）排序，前三名按人物 id 哈希挑一首（同人可复现、人间分散）。优先级：手动 --bgm > 自动选曲 > 等人工送歌；--no-auto-bgm 可关。
 - 曲库全量入池：52 首全部补齐 styles（falcom-rock→trails-battle、counterattack-epic→xenoblade-epic 别名）并翻 auto:true；新曲登记时带风格默认 auto:true，不想被选的手动改回 false。
 - Discord 侧：小结出现「BGM 状态：已自动配乐」即任务直接定稿，机器人不再索要 BGM；但自动配乐的任务仍可换曲——发来新文件即覆盖重混。
+
+## 2026-10-26 · 模型口径：只用 Gemini 3.8 与 DeepSeek Flash 两家
+
+- 作者定口径（原话）：「模型暂时只考虑 gemini 3.8 和 deepseek flash」。全系统收敛：生成默认 Gemini 3.8-flash、审查继电 DeepSeek→Gemini 3.8、大脑主模型 Gemini 3.8-flash。
+- 大脑备用跨厂切 DeepSeek Flash（Zen 的 deepseek-v4-flash）：主模型倒下时经一层 Gemini→OpenAI 方言翻译把对话交给 DS 跑完（工具执行不变）。此前教训：同厂备用 gemini-2.5-flash 已被谷歌对新用户下线、3.5-lite 也不在口径内——备用必须活着且合口径。
+- 体检工具：probe-gemini（--list 看 key 的可用名单、deepseek 测备用通道）。
