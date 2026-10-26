@@ -133,7 +133,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // 谷歌的过载是暂时的，不该让一次抖动废掉整条命令；4xx 请求错误不重试。
 // 单次上限 30 秒：大脑只是理解人话派活，正常几秒就回，挂过 30 秒就是上游出事，
 // 早点判死刑去重试/切备用，别让用户干等（曾出现 3 次 90 秒超时烧掉 7 分钟的事故）。
-const FALLBACK_MODEL = "gemini-2.5-flash";
+// 备用模型按 2026-10-26 用 probe-gemini --list 实测的 key 可用名单选：
+// gemini-2.5-flash 已被谷歌对新用户下线（404），教训是备用必须实测、不能凭记忆；
+// lite 是独立服务池，与主模型错峰，主模型高 demand 时它通常可用。
+const FALLBACK_MODEL = "gemini-3.5-flash-lite";
 async function callBrain(model, bodyObj) {
   let lastStatus = 0;
   let lastErr = null;
