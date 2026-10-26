@@ -45,7 +45,7 @@ const pinnedProvider = flag("provider", null);
 const pinnedModel = flag("model", null);
 const DEFAULT_MODELS = {
   deepseek: "deepseek-chat",
-  opencode: "deepseek-v4-flash",
+  opencode: "deepseek-v4.1-flash",
   gemini: "gemini-3.8-flash",
 };
 const KEY_ENVS = {

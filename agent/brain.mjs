@@ -165,7 +165,7 @@ async function callBrain(model, bodyObj) {
 
 // ---------- DeepSeek 备用通道（OpenAI 方言翻译层） ----------
 // 主模型（Gemini）倒下时，把 Gemini 格式的对话历史翻译成 OpenAI 格式，
-// 经 OpenCode Zen 调 deepseek-v4-flash 把这一轮跑完。工具执行仍走同一个
+// 经 OpenCode Zen 调 deepseek-v4.1-flash 把这一轮跑完。工具执行仍走同一个
 // executeTool；DS 轮次的工具调用细节不回写 Gemini 历史（只回写最终答复），
 // 任务状态在 jobs 落盘、不靠对话历史，所以无损。
 function lowerTypes(node) {

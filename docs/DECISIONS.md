@@ -96,3 +96,9 @@
 - 作者定口径（原话）：「模型暂时只考虑 gemini 3.8 和 deepseek flash」。全系统收敛：生成默认 Gemini 3.8-flash、审查继电 DeepSeek→Gemini 3.8、大脑主模型 Gemini 3.8-flash。
 - 大脑备用跨厂切 DeepSeek Flash（Zen 的 deepseek-v4-flash）：主模型倒下时经一层 Gemini→OpenAI 方言翻译把对话交给 DS 跑完（工具执行不变）。此前教训：同厂备用 gemini-2.5-flash 已被谷歌对新用户下线、3.5-lite 也不在口径内——备用必须活着且合口径。
 - 体检工具：probe-gemini（--list 看 key 的可用名单、deepseek 测备用通道）。
+
+## 2026-10-26 晚 · 更正：DeepSeek Flash 模型名已漂移（v4 → v4.1）
+
+- Zen 已把 deepseek-v4-flash 升级改名为 **deepseek-v4.1-flash**；老名直接 403「Model access is disabled」（不是账号问题）。全仓引用（大脑备用、审查、生成器 opencode 通道）已统一改到 v4.1。
+- 实测背书：用作者的 key 在 Muse 环境直测——名单接口 200、新名对话 200、工具调用格式标准。账号与 $5 余额健康。
+- 教训：模型名是会漂移的外部状态；再遇 403 先跑 probe / 拉名单核对，不要先怀疑账号和 key。

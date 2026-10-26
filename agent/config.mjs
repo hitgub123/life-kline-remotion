@@ -31,7 +31,7 @@ export const CFG = {
   brainModel: process.env.BRAIN_MODEL || "gemini-3.8-flash",
   // 大脑备用通道：OpenCode Zen 上的 DeepSeek Flash（口径：模型只用 Gemini 3.8 与 DeepSeek Flash 两家）
   opencodeKey: process.env.OPENCODE_API_KEY || "",
-  deepseekFlashModel: process.env.DEEPSEEK_FLASH_MODEL || "deepseek-v4-flash",
+  deepseekFlashModel: process.env.DEEPSEEK_FLASH_MODEL || "deepseek-v4.1-flash",
   demoPerUserDaily: parseInt(process.env.DEMO_PER_USER_DAILY || "1", 10),
   demoGlobalDaily: parseInt(process.env.DEMO_GLOBAL_DAILY || "5", 10),
 };
