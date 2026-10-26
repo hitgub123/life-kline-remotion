@@ -158,13 +158,16 @@ async function callBrain(model, bodyObj) {
       lastStatus = 0;
     }
   }
+  logError(`大脑调用失败：模型 ${model} 三次尝试均失败，末次状态 ${lastStatus || "网络错误"}${lastErr ? "，" + lastErr.message : ""}`);
   return { ok: false, status: lastStatus, error: lastErr };
 }
 
 const histories = new Map();
 export async function chat(channelKey, userText, ctx) {
   if (!CFG.geminiKey) return "大脑没接好：缺 GEMINI_API_KEY 配置。";
-  const history = histories.get(channelKey) || [];
+  // 在副本上推进对话，成功才写回：失败的轮次不许污染历史
+  // （否则每次失败都会在历史里多塞一条孤儿消息，越攒越容易出错）
+  const history = [...(histories.get(channelKey) || [])];
   history.push({ role: "user", parts: [{ text: userText }] });
   const body = () => ({
     systemInstruction: { parts: [{ text: SYSTEM }] },
@@ -186,8 +189,7 @@ export async function chat(channelKey, userText, ctx) {
       r = await callBrain(model, body());
     }
     if (!r.ok) {
-      logError(`大脑调用失败：模型 ${model}，状态 ${r.status || "网络错误"}${r.error ? "，" + r.error.message : ""}`);
-      return `大脑调用失败（${r.status || "网络错误"}，已自动重试多次），谷歌服务可能暂时过载，请稍后再试。`;
+      return `大脑调用失败（${r.status || "网络错误"}，模型 ${model}${fellBack ? "，已切备用模型仍失败" : ""}，已自动重试多次），请稍后再试。`;
     }
     const j = r.json;
     const content = j.candidates?.[0]?.content;
