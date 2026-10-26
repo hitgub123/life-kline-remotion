@@ -9,6 +9,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, CFG } from "./config.mjs";
 import { enqueue, listJobs, guestQuota, consumeGuestQuota } from "./jobs.mjs";
+import { logError } from "./log.mjs";
 
 const SYSTEM = `你是「人生K线视频工厂」的管家，帮主人经营一条全自动短视频生产线：给一个人名，系统会查维基资料、写脚本、让另一个模型做事实核查、渲染视频、配头尾旁白，最后交成片。
 
@@ -127,6 +128,36 @@ function executeTool(name, args, ctx) {
   }
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// 单轮调用带重试：503（过载）/429/5xx 与网络错误都退避重试（1.5s → 4s），
+// 谷歌的过载是暂时的，不该让一次抖动废掉整条命令；4xx 请求错误不重试。
+async function callBrain(model, bodyObj) {
+  let lastStatus = 0;
+  let lastErr = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await sleep([1500, 4000][attempt - 1]);
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          signal: AbortSignal.timeout(90000),
+          headers: { "Content-Type": "application/json", "x-goog-api-key": CFG.geminiKey },
+          body: JSON.stringify(bodyObj),
+        }
+      );
+      if (res.ok) return { ok: true, json: await res.json() };
+      lastStatus = res.status;
+      lastErr = null;
+      if (![429, 500, 502, 503, 504].includes(res.status)) break;
+    } catch (e) {
+      lastErr = e;
+      lastStatus = 0;
+    }
+  }
+  return { ok: false, status: lastStatus, error: lastErr };
+}
+
 const histories = new Map();
 export async function chat(channelKey, userText, ctx) {
   if (!CFG.geminiKey) return "大脑没接好：缺 GEMINI_API_KEY 配置。";
@@ -138,19 +169,23 @@ export async function chat(channelKey, userText, ctx) {
     tools: [{ functionDeclarations: TOOLS }],
     generationConfig: { temperature: 0.4 },
   });
+  let model = CFG.brainModel;
+  let fellBack = false;
   try {
   for (let round = 0; round < 6; round++) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${CFG.brainModel}:generateContent`,
-      {
-        method: "POST",
-        signal: AbortSignal.timeout(90000),
-        headers: { "Content-Type": "application/json", "x-goog-api-key": CFG.geminiKey },
-        body: JSON.stringify(body()),
-      }
-    );
-    if (!res.ok) return `大脑调用失败（${res.status}），请稍后再试。`;
-    const j = await res.json();
+    let r = await callBrain(model, body());
+    if (!r.ok && !fellBack && model !== "gemini-2.5-flash" && (r.status === 503 || r.status === 404)) {
+      // 主力模型持续不可用：切备用模型把这次对话跑完，别让用户白等
+      fellBack = true;
+      logError(`大脑主模型 ${model} 不可用（${r.status}），切备用模型 gemini-2.5-flash`);
+      model = "gemini-2.5-flash";
+      r = await callBrain(model, body());
+    }
+    if (!r.ok) {
+      logError(`大脑调用失败：模型 ${model}，状态 ${r.status || "网络错误"}${r.error ? "，" + r.error.message : ""}`);
+      return `大脑调用失败（${r.status || "网络错误"}，已自动重试多次），谷歌服务可能暂时过载，请稍后再试。`;
+    }
+    const j = r.json;
     const content = j.candidates?.[0]?.content;
     if (!content) return "大脑没给出回复，请再说一次。";
     history.push(content);
@@ -174,7 +209,7 @@ export async function chat(channelKey, userText, ctx) {
     history.push({ role: "user", parts: responses });
   }
   } catch (e) {
-    console.error("大脑调用异常:", e);
+    logError("大脑调用异常:", e);
     return "大脑那边网络出了点问题，我记下来了，稍后再问我一次。";
   }
   histories.set(channelKey, history);
