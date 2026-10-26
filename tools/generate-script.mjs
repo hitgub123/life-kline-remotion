@@ -50,7 +50,7 @@ const model =
       : "gemini-3.8-flash");
 
 if (!name || !id) {
-  console.error('用法: node tools/generate-script.mjs "人名" --id EnglishId [--provider gemini|deepseek|opencode] [--dry-run] [--from-file 文件]');
+  console.error('用法: node tools/generate-script.mjs "人名" --id EnglishId [--provider gemini|deepseek|opencode] [--no-fallback] [--dry-run] [--from-file 文件]');
   process.exit(1);
 }
 if (!/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
@@ -176,7 +176,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // 生成通道调度（口径：只用 Gemini 3.8 与 DeepSeek Flash 两家）：
 // 同通道重试只对 429/5xx（过载类，缓一缓能好），超时/网络错误只重试 1 次；
 // 主通道最终失败（除 400 请求错误外）自动跨厂切换备用通道。
-// 用户显式 --provider 时尊重指定、不自动切换。
+// 注意：produce 流水线会显式传 --provider（那只是它的默认主通道，不是禁止切换），
+// 所以守卫不能认 --provider；真要单通道跑，显式传 --no-fallback。
 const FALLBACK_CHAIN = {
   gemini: ["opencode", "deepseek-v4.1-flash"],
   opencode: ["gemini", "gemini-3.8-flash"],
@@ -185,7 +186,7 @@ const FALLBACK_CHAIN = {
 const KEY_ENVS = { gemini: "GEMINI_API_KEY", deepseek: "DEEPSEEK_API_KEY", opencode: "OPENCODE_API_KEY" };
 async function callLLM(prompt) {
   const chain = [[provider, model]];
-  if (!args.includes("--provider")) {
+  if (!args.includes("--no-fallback")) {
     const fb = FALLBACK_CHAIN[provider];
     if (fb && process.env[KEY_ENVS[fb[0]]]) chain.push(fb);
   }
