@@ -131,6 +131,9 @@ function executeTool(name, args, ctx) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // 单轮调用带重试：503（过载）/429/5xx 与网络错误都退避重试（1.5s → 4s），
 // 谷歌的过载是暂时的，不该让一次抖动废掉整条命令；4xx 请求错误不重试。
+// 单次上限 30 秒：大脑只是理解人话派活，正常几秒就回，挂过 30 秒就是上游出事，
+// 早点判死刑去重试/切备用，别让用户干等（曾出现 3 次 90 秒超时烧掉 7 分钟的事故）。
+const FALLBACK_MODEL = "gemini-2.5-flash";
 async function callBrain(model, bodyObj) {
   let lastStatus = 0;
   let lastErr = null;
@@ -141,7 +144,7 @@ async function callBrain(model, bodyObj) {
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         {
           method: "POST",
-          signal: AbortSignal.timeout(90000),
+          signal: AbortSignal.timeout(30000),
           headers: { "Content-Type": "application/json", "x-goog-api-key": CFG.geminiKey },
           body: JSON.stringify(bodyObj),
         }
@@ -174,11 +177,12 @@ export async function chat(channelKey, userText, ctx) {
   try {
   for (let round = 0; round < 6; round++) {
     let r = await callBrain(model, body());
-    if (!r.ok && !fellBack && model !== "gemini-2.5-flash" && (r.status === 503 || r.status === 404)) {
-      // 主力模型持续不可用：切备用模型把这次对话跑完，别让用户白等
+    // 切备用的条件：除 400/401/403（请求或 key 的问题，换模型也没用）外都切——
+    // 含超时与网络错误（状态 0），事故教训：上游「挂住不回」比回 503 更常见。
+    if (!r.ok && !fellBack && model !== FALLBACK_MODEL && ![400, 401, 403].includes(r.status)) {
       fellBack = true;
-      logError(`大脑主模型 ${model} 不可用（${r.status}），切备用模型 gemini-2.5-flash`);
-      model = "gemini-2.5-flash";
+      logError(`大脑主模型 ${model} 不可用（${r.status || "网络错误"}），切备用模型 ${FALLBACK_MODEL}`);
+      model = FALLBACK_MODEL;
       r = await callBrain(model, body());
     }
     if (!r.ok) {
