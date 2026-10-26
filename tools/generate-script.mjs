@@ -122,17 +122,17 @@ function buildPrompt() {
 }
 
 // ---------- 调 API ----------
-async function callLLM(prompt) {
+async function callOnce(p, m, prompt) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 180000);
   try {
-    // OpenAI 兼容通道：deepseek=官方接口，opencode=OpenCode Zen 网关（免费 DeepSeek 等）
+    // OpenAI 兼容通道：deepseek=官方接口，opencode=OpenCode Zen 网关（DeepSeek Flash）
     const OPENAI_COMPAT = {
       deepseek: { base: "https://api.deepseek.com", keyEnv: "DEEPSEEK_API_KEY" },
       opencode: { base: "https://opencode.ai/zen/v1", keyEnv: "OPENCODE_API_KEY" },
     };
-    if (OPENAI_COMPAT[provider]) {
-      const { base, keyEnv } = OPENAI_COMPAT[provider];
+    if (OPENAI_COMPAT[p]) {
+      const { base, keyEnv } = OPENAI_COMPAT[p];
       const key = process.env[keyEnv];
       if (!key) throw new Error(`缺环境变量 ${keyEnv}`);
       const res = await fetch(`${base}/chat/completions`, {
@@ -140,20 +140,20 @@ async function callLLM(prompt) {
         signal: ctrl.signal,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
-          model,
+          model: m,
           messages: [{ role: "user", content: prompt }],
           response_format: { type: "json_object" },
           temperature: 0.7,
         }),
       });
-      if (!res.ok) throw new Error(`${provider} API ${res.status}: ${await res.text()}`);
+      if (!res.ok) throw new Error(`${p} API ${res.status}: ${await res.text()}`);
       const j = await res.json();
       return j.choices[0].message.content;
     }
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new Error("缺环境变量 GEMINI_API_KEY");
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
       {
         method: "POST",
         signal: ctrl.signal,
@@ -170,6 +170,46 @@ async function callLLM(prompt) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// 生成通道调度（口径：只用 Gemini 3.8 与 DeepSeek Flash 两家）：
+// 同通道重试只对 429/5xx（过载类，缓一缓能好），超时/网络错误只重试 1 次；
+// 主通道最终失败（除 400 请求错误外）自动跨厂切换备用通道。
+// 用户显式 --provider 时尊重指定、不自动切换。
+const FALLBACK_CHAIN = {
+  gemini: ["opencode", "deepseek-v4.1-flash"],
+  opencode: ["gemini", "gemini-3.8-flash"],
+  deepseek: ["gemini", "gemini-3.8-flash"],
+};
+const KEY_ENVS = { gemini: "GEMINI_API_KEY", deepseek: "DEEPSEEK_API_KEY", opencode: "OPENCODE_API_KEY" };
+async function callLLM(prompt) {
+  const chain = [[provider, model]];
+  if (!args.includes("--provider")) {
+    const fb = FALLBACK_CHAIN[provider];
+    if (fb && process.env[KEY_ENVS[fb[0]]]) chain.push(fb);
+  }
+  let lastErr = null;
+  for (let ci = 0; ci < chain.length; ci++) {
+    const [p, m] = chain[ci];
+    if (ci > 0) console.error(`→ 自动切换备用通道 ${p}/${m}……`);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const out = await callOnce(p, m, prompt);
+        if (ci > 0) console.log(`✓ 已由备用通道 ${p}/${m} 生成`);
+        return out;
+      } catch (e) {
+        lastErr = e;
+        const status = Number(e.message.match(/API (\d{3})/)?.[1] || 0);
+        console.error(`生成通道 ${p}/${m} 第 ${attempt} 次失败：${e.message.split("\n")[0].slice(0, 160)}`);
+        if (status === 400) throw e; // 请求本身的问题，换通道也没用
+        const retryable = status ? status === 429 || status >= 500 : attempt < 2;
+        if (!retryable || attempt === 3) break;
+        await sleep(attempt === 1 ? 2000 : 6000);
+      }
+    }
+  }
+  throw lastErr;
 }
 
 // ---------- 解析与校验 ----------
@@ -261,7 +301,18 @@ if (dryRun) {
   process.exit(0);
 }
 
-const raw = fromFile ? readFileSync(fromFile, "utf8") : await callLLM(prompt);
+let raw;
+if (fromFile) {
+  raw = readFileSync(fromFile, "utf8");
+} else {
+  try {
+    raw = await callLLM(prompt);
+  } catch (e) {
+    // 只报一行原因，不让整页堆栈淹没真正的错误（Discord 失败消息会带上这行）
+    console.error(`生成失败：${e.message.split("\n")[0]}`);
+    process.exit(1);
+  }
+}
 let data;
 try {
   data = extractJson(raw);
