@@ -244,3 +244,18 @@ make-voice 逐句 TTS（默认 edge-tts 音色 zh-CN-YunyangNeural，`pip instal
 （近现代政治人物、在世/近任领导人、争议人物等）一票否决。榜单带生卒、简介、建议 id 与
 「✓已做/在世」标记。`--no-rank` 跳过 LLM 只出原始热度榜；`--min 40` 只要顶流；`--limit 10` 控制条数。
 produce 生产入口另有黑名单硬拦截：名单内人物用 /make 或命令行都做不出来（防绕过选题直接下单）。
+
+## 进阶：多语言版（日/英）
+
+同一份脚本可以出日文、英文版：K 线数据骨架（关键点、形状、时长、BGM）三语共用，只翻文字层。
+
+```bash
+node tools/translate-script.mjs src/data/elonmusk.json             # 默认日+英
+node tools/translate-script.mjs src/data/elonmusk.json --to en     # 只出英文
+```
+
+- 产物：`src/data/<id>.ja.json` / `<id>.en.json`，并自动注册 Composition（如 ElonMuskJa）。之后渲染、配音、合成与中文版完全同路：`npx remotion render ElonMuskJa out/xx.mp4`，配音 `node tools/make-voice.mjs src/data/<id>.ja.json`。
+- 翻译范围：人物名/头衔/标签、关键点批注、每段标题句（分行与分段结构不变）、底部名言（优先该人物广为人知的原语言原句或通行译本）、头尾旁白。译本不继承中文版的 factcheck 印章（印章属于原文），改记 `translated` 来源戳。
+- 音色：日文默认 nanami、英语默认 aria（edge 免费线）；Gemini 的 kore 一把声音可读中日英，适合打样与高级线。make-voice 用 `--style` 可临时覆盖。
+- 版面：模板已做多语言自适应——标题组、底部名言、片头人名/标题会按实测宽度自动缩字号防溢出；英文版自动换 Playfair Display 展示衬线并保留词距；界面固定词（年/岁、退市印章）按 `lang` 切换（EN: Age/DELISTED，JA: 歳/上場廃止）。中文版面不受影响。
+- 通道口径同生成器：Gemini 3.8 主、DeepSeek Flash 备，`--provider` 可钉死。

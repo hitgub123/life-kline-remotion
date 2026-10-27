@@ -45,6 +45,8 @@ const FONT_FILES: { family: string; file: string; weight: string }[] = [
   { family: "Noto Serif SC", file: "fonts/NotoSerifSC-Bold.otf", weight: "700" },
   { family: "Noto Sans SC", file: "fonts/NotoSansSC-Bold.otf", weight: "700" },
   { family: "Ma Shan Zheng", file: "fonts/MaShanZheng.ttf", weight: "400" },
+  // 英文版展示衬线（可变字重 400–900）：仅 lang=en 时启用，中文版版面不受影响
+  { family: "Playfair Display", file: "fonts/PlayfairDisplay.ttf", weight: "400 900" },
 ];
 
 async function loadAllFonts(): Promise<void> {
@@ -58,8 +60,24 @@ async function loadAllFonts(): Promise<void> {
   await document.fonts.ready;
 }
 
+// 多语言版面自适应：字体加载完成后用 canvas 实测文字宽度，超宽时等比缩小字号。
+// （译文长度不可控，固定字号必然溢出；中文原稿在本函数下量得 ≤ 上限、字号不变。）
+let _mctx: CanvasRenderingContext2D | null = null;
+function fitFontSize(text: string, family: string, weight: number, base: number, maxWidth: number): number {
+  if (typeof document === "undefined") return base;
+  if (!_mctx) _mctx = document.createElement("canvas").getContext("2d");
+  if (!_mctx) return base;
+  _mctx.font = `${weight} ${base}px ${family}`;
+  const w = _mctx.measureText(text).width;
+  if (w <= maxWidth) return base;
+  return Math.max(22, Math.floor(base * (maxWidth / w) * 0.995));
+}
+
 export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData }) => {
   const DATA = scriptData ?? (libai as unknown as ScriptData);
+  // 英文版换展示衬线：局部同名常量遮蔽模块级字体栈，下方所有引用自动生效；中文/日文版面不变。
+  const SERIF = DATA.lang === "en" ? "'Playfair Display', 'Noto Serif SC', serif" : "'Noto Serif SC', serif";
+  const BRUSH = DATA.lang === "en" ? "'Playfair Display', serif" : "'Ma Shan Zheng', cursive";
   const BUILT = useMemo(() => buildSeries(DATA), [DATA]);
   const ANNOS = useMemo(() => annoLayout(BUILT.candles), [BUILT]);
   const ANNO_IDX = useMemo(() => new Set(ANNOS.keys()), [ANNOS]);
@@ -81,15 +99,33 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
   const t = frame / fps;
 
   const [fontHandle] = useState(() => delayRender("Loading fonts"));
+  const [fontsReady, setFontsReady] = useState(false);
   useEffect(() => {
     loadAllFonts()
-      .then(() => continueRender(fontHandle))
+      .then(() => setFontsReady(true))
       .catch((e) => {
         // eslint-disable-next-line no-console
         console.error("font load failed", e);
-        continueRender(fontHandle);
+        setFontsReady(true);
       });
-  }, [fontHandle]);
+  }, []);
+  // 字体就绪（fitFontSize 的量宽结果已在本帧生效）后才放行捕获
+  useEffect(() => {
+    if (fontsReady) continueRender(fontHandle);
+  }, [fontsReady, fontHandle]);
+
+  // 界面固定文案按语言切换（模板里原硬编码的中文）
+  const UI =
+    DATA.lang === "en"
+      ? { yearAge: (y: number, a: number) => `${y} · Age ${a}`, delist: "DELISTED", stamp: "DELISTED", stampSize: 52 }
+      : DATA.lang === "ja"
+        ? { yearAge: (y: number, a: number) => `${y}年 · ${a}歳`, delist: "上場廃止", stamp: "上場廃止", stampSize: 66 }
+        : { yearAge: (y: number, a: number) => `${y}年 · ${a}岁`, delist: "退市", stamp: "退市", stampSize: 104 };
+  // 片头卡的逐字间隔排版是中文美学：拉丁词组（含空格）保持整词、另加字距
+  const hookSpaced = (s: string) => (s.includes(" ") ? s : s.split("").join(" "));
+  const hookTracking = (s: string) => (s.includes(" ") ? 8 : undefined);
+  const hookName = hookSpaced(DATA.subject.name);
+  const hookTitle = hookSpaced(DATA.subject.title);
 
   const segs = DATA.segments;
   const starts = BUILT.segStarts;
@@ -152,6 +188,10 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
 
   const headline = (idx: number, opacity: number, blur: number) => {
     if (opacity <= 0) return null;
+    // 整组标题统一缩字号：以最宽的一行为准（译文超宽时保版式不溢出）
+    const fit = fontsReady
+      ? Math.min(...segs[idx].headline.map((line) => fitFontSize(line.map(([tx]) => tx).join(""), SERIF, 700, 94, 962)))
+      : 94;
     return (
       <div
         style={{
@@ -163,12 +203,12 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
           filter: blur > 0.1 ? `blur(${blur}px)` : undefined,
           fontFamily: SERIF,
           fontWeight: 700,
-          fontSize: 94,
+          fontSize: fit,
           color: INK,
         }}
       >
         {segs[idx].headline.map((line, li) => (
-          <div key={li} style={{ lineHeight: "132px", whiteSpace: "nowrap" }}>
+          <div key={li} style={{ lineHeight: `${Math.round(132 * (fit / 94))}px`, whiteSpace: "nowrap" }}>
             {line.map(([txt, acc], ti) => (
               <span key={ti} style={{ color: acc ? ACCENT : INK }}>
                 {txt}
@@ -343,7 +383,7 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
           </div>
           {lastCi >= 0 && (
             <>
-              <div style={{ position: "absolute", top: 612, left: 86, fontFamily: BRUSH, fontSize: 100, color: INK }}>
+              <div style={{ position: "absolute", top: 612, left: 86, fontFamily: BRUSH, fontSize: fontsReady ? fitFontSize(DATA.subject.name, BRUSH, 400, 100, 580) : 100, color: INK }}>
                 {DATA.subject.name}
               </div>
               <div style={{ position: "absolute", top: 726, left: 84, fontFamily: SERIF, fontWeight: 700, fontSize: 116, color: INK }}>
@@ -356,11 +396,11 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
                   : Math.round(lastCloseDisp)}
               </div>
               <div style={{ position: "absolute", top: 664, right: 86, fontFamily: SERIF, fontSize: 36, color: GRAY }}>
-                {DATA.subject.birth_year + Math.floor(BUILT.candles[lastCi].age) - 1}年 · {Math.floor(BUILT.candles[lastCi].age)}岁
+                {UI.yearAge(DATA.subject.birth_year + Math.floor(BUILT.candles[lastCi].age) - 1, Math.floor(BUILT.candles[lastCi].age))}
               </div>
               {showDelist && (
                 <div style={{ position: "absolute", top: 722, right: 86, fontFamily: SERIF, fontSize: 33, color: GRAY }}>
-                  退市
+                  {UI.delist}
                 </div>
               )}
             </>
@@ -394,13 +434,13 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
                 alignItems: "center",
                 justifyContent: "center",
                 fontFamily: BRUSH,
-                fontSize: 104,
+                fontSize: UI.stampSize,
                 color: "#F3EEE2",
                 transform: `rotate(-5deg) scale(${scale})`,
                 opacity: stampOn,
               }}
             >
-              退市
+              {UI.stamp}
             </div>
           );
         })()}
@@ -424,7 +464,7 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
             style={{
               fontFamily: SANS,
               fontWeight: 700,
-              fontSize: 52,
+              fontSize: fontsReady ? fitFontSize(seg?.quote ?? "", SANS, 700, 52, 1000) : 52,
               color: "#FCFAF4",
               textShadow: "2px 3px 6px rgba(74,64,46,0.55)",
               whiteSpace: "nowrap",
@@ -445,11 +485,12 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
               width: 1080,
               textAlign: "center",
               fontFamily: BRUSH,
-              fontSize: 170,
+              fontSize: fontsReady ? fitFontSize(hookName, BRUSH, 400, 170, 1020) : 170,
+              letterSpacing: hookTracking(DATA.subject.name),
               color: INK,
             }}
           >
-            {DATA.subject.name.split("").join(" ")}
+            {hookName}
           </div>
           <div
             style={{
@@ -459,11 +500,12 @@ export const LifeKline: React.FC<{ scriptData?: ScriptData }> = ({ scriptData })
               textAlign: "center",
               fontFamily: SERIF,
               fontWeight: 700,
-              fontSize: 62,
+              fontSize: fontsReady ? fitFontSize(hookTitle, SERIF, 700, 62, 1020) : 62,
+              letterSpacing: hookTracking(DATA.subject.title),
               color: ACCENT,
             }}
           >
-            {DATA.subject.title.split("").join(" ")}
+            {hookTitle}
           </div>
           <div
             style={{
