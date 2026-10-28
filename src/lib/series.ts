@@ -26,6 +26,7 @@ export interface ScriptData {
   seed: number;
   bpm?: number;
   template?: string;
+  lang?: string; // 译本语言标记（ja/en；缺省=中文原文）。模板按它换英文字体，翻译工具写入。
   bgm_style?: string;
   bgm_tags?: string;
   factcheck?: { by: string; at: string; verdict: string; issues: number; source?: string };

@@ -48,6 +48,23 @@ if (!name || !id || !/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
   console.error("（id 由调用者给：人物姓名的拼音连写，如 SuShi / XinQiji）");
   process.exit(1);
 }
+// 选题黑名单硬拦截：敏感人物在生产入口直接挡下（Discord 与命令行都走这里，防绕过选题工具直接下单）。
+// 命中名字（含别名）或 id 即拒绝；要放行某人，改 tools/topic-blacklist.json。
+{
+  const blFile = join(ROOT, "tools/topic-blacklist.json");
+  if (existsSync(blFile)) {
+    try {
+      const bl = JSON.parse(readFileSync(blFile, "utf8"));
+      const hit = (bl.entries || []).find(
+        (e) => e.name === name || (e.aliases || []).includes(name) || (e.id || "").toLowerCase() === id.toLowerCase()
+      );
+      if (hit) {
+        console.error(`⛔「${name}」在选题黑名单内（${hit.category}），敏感人物不生产。名单：tools/topic-blacklist.json`);
+        process.exit(1);
+      }
+    } catch {}
+  }
+}
 const base = id.toLowerCase();
 const scriptRel = `src/data/${base}.json`;
 const scriptPath = join(ROOT, scriptRel);

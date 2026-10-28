@@ -1,5 +1,5 @@
 {
- "_readme": "配音音色库: 一套音色 = 一个引擎 + 一个音色 id + 可选的语气指令。脚本 voice.style 选音色，tools/make-voice.mjs 按这里执行。engine 三种: edge(本机免费)、gemini(描述定制，需 GEMINI_API_KEY)、elevenlabs(库选/克隆，需 ELEVENLABS_API_KEY)。2026-10-25 选角定版：配音不用男声，且试听后唯一过关的是晓晓（xiaoxiao）——当前唯一启用音色兼默认；其余档案保留（老脚本兼容/日后重开）但标注停用，生成器不要选。",
+ "_readme": "配音音色库: 一套音色 = 一个引擎 + 一个音色 id + 可选的语气指令。脚本 voice.style 选音色，tools/make-voice.mjs 按这里执行。engine 三种: edge(本机免费)、gemini(描述定制，需 GEMINI_API_KEY)、elevenlabs(库选/克隆，需 ELEVENLABS_API_KEY)。2026-10-25 选角定版：配音不用男声，且试听后唯一过关的是晓晓（xiaoxiao）——当前唯一启用音色兼默认；其余档案保留（老脚本兼容/日后重开）但标注停用，生成器不要选。 2026-10-27 增补多语言音色：nanami（日语）/aria（英语）为 edge 量产线，与晓晓同门；kore 为 Gemini 多语女声（打样与高级线，日英通用）。中文版选角定版不变（仍只有 xiaoxiao）。",
  "default": "xiaoxiao",
  "styles": {
   "documentary": {
@@ -70,6 +70,27 @@
    "note": "作者决定配音不用男声，生成器不要选。保留仅为老脚本兼容。",
    "rate": "+0%",
    "voice": "zh-CN-YunyangNeural"
+  },
+  "nanami": {
+   "engine": "edge",
+   "label": "日语女声 Nanami（多语言版）",
+   "note": "日文版默认音色。edge 免费线，ja-JP 标准女声，发音自然。",
+   "rate": "+0%",
+   "voice": "ja-JP-NanamiNeural"
+  },
+  "aria": {
+   "engine": "edge",
+   "label": "英语女声 Aria（多语言版）",
+   "note": "英文版默认音色。edge 免费线，en-US 自然女声。",
+   "rate": "+0%",
+   "voice": "en-US-AriaNeural"
+  },
+  "kore": {
+   "engine": "gemini",
+   "label": "Gemini 多语女声 Kore（打样/高级线）",
+   "note": "同一个声音可朗读中日英；多语言样片打样用，也可作量产高级线（按量计费）。中文版正式选角仍以 xiaoxiao 为准。",
+   "style": "用沉稳知性的女声旁白朗读：语速适中，有分量感，克制不煽情。",
+   "voice": "Kore"
   }
  }
 }

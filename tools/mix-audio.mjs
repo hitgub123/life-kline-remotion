@@ -96,7 +96,9 @@ if (voice) {
 }
 if (duck) {
   filters.push(
-    `[bgmraw][vkey]sidechaincompress=threshold=0.02:ratio=9:attack=40:release=500:makeup=1[bgm]`
+    // release 500→1200：释放太短时，结尾旁白的句间停顿里 BGM 会反复涌回满音量再被压下，
+    // 听感像音乐和人声在「交替出现」（2026-10-26 马云成片反馈）；拉长释放后停顿内只缓慢回升。
+    `[bgmraw][vkey]sidechaincompress=threshold=0.02:ratio=9:attack=40:release=1200:makeup=1[bgm]`
   );
   bgmLabel = "[bgm]";
 }

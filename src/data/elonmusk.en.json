@@ -1,0 +1,425 @@
+{
+  "subject": {
+    "name": "Elon Musk",
+    "title": "Life Candlestick Chart",
+    "birth_year": 1971,
+    "stock_label": "Silicon Valley Iron Man · Ticker TSLA",
+    "series": "Life Slices"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "keypoints": [
+    [
+      18,
+      8,
+      null
+    ],
+    [
+      25,
+      12,
+      "Dropped out of Stanford"
+    ],
+    [
+      29,
+      22,
+      "Cashes out $20M"
+    ],
+    [
+      32,
+      28,
+      "All-in on rockets"
+    ],
+    [
+      38,
+      4,
+      "Near bankruptcy"
+    ],
+    [
+      42,
+      24,
+      "Dragon docking"
+    ],
+    [
+      47,
+      18,
+      "Production hell"
+    ],
+    [
+      51,
+      46,
+      "Tops the rich list"
+    ],
+    [
+      52,
+      26,
+      "Buys Twitter"
+    ],
+    [
+      54,
+      45,
+      "Chopsticks catch rocket"
+    ],
+    [
+      56,
+      50,
+      "Trillion-dollar fortune"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 22,
+      "vol": 0.08,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Two days into a Stanford PhD,",
+            0
+          ]
+        ],
+        [
+          [
+            "drops out,",
+            1
+          ],
+          [
+            "storms the internet.",
+            0
+          ]
+        ]
+      ],
+      "quote": "When something is important enough, you do it even if the odds are not in your favor."
+    },
+    {
+      "id": "s2",
+      "dur": 6,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 18,
+      "vol": 0.12,
+      "shape": 1.2,
+      "headline": [
+        [
+          [
+            "Sells his first company,",
+            0
+          ]
+        ],
+        [
+          [
+            "at 28,",
+            0
+          ],
+          [
+            "cashes out millions.",
+            1
+          ]
+        ]
+      ],
+      "quote": "I ran a website by day and coded all night."
+    },
+    {
+      "id": "s3",
+      "dur": 6,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 16,
+      "vol": 0.1,
+      "shape": 1.1,
+      "headline": [
+        [
+          [
+            "Sells PayPal,",
+            0
+          ],
+          [
+            "rakes in",
+            0
+          ],
+          [
+            "hundreds of millions.",
+            1
+          ]
+        ],
+        [
+          [
+            "Goes all-in",
+            1
+          ],
+          [
+            "on space and EVs.",
+            0
+          ]
+        ]
+      ],
+      "quote": "I would like to die on Mars. Just not on impact."
+    },
+    {
+      "id": "s4",
+      "dur": 7,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 26,
+      "vol": 0.18,
+      "shape": 0.7,
+      "headline": [
+        [
+          [
+            "Rockets explode three times in a row,",
+            0
+          ]
+        ],
+        [
+          [
+            "funds run dry,",
+            0
+          ],
+          [
+            "near bankruptcy.",
+            1
+          ]
+        ]
+      ],
+      "quote": "I will never give up; I'd have to be dead or completely incapacitated."
+    },
+    {
+      "id": "s5",
+      "dur": 6.5,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 20,
+      "vol": 0.16,
+      "shape": 1.5,
+      "headline": [
+        [
+          [
+            "Fourth launch succeeds,",
+            0
+          ]
+        ],
+        [
+          [
+            "Dragon",
+            0
+          ],
+          [
+            "defies the odds.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s6",
+      "dur": 6,
+      "kp": [
+        5,
+        6
+      ],
+      "candles": 20,
+      "vol": 0.14,
+      "shape": 0.9,
+      "headline": [
+        [
+          [
+            "Hits production hell,",
+            1
+          ]
+        ],
+        [
+          [
+            "sleeps on the factory floor,",
+            0
+          ],
+          [
+            "shorts close in.",
+            1
+          ]
+        ]
+      ],
+      "quote": "That was the darkest, most difficult year of my life."
+    },
+    {
+      "id": "s7",
+      "dur": 7,
+      "kp": [
+        6,
+        7
+      ],
+      "candles": 28,
+      "vol": 0.12,
+      "shape": 1.7,
+      "headline": [
+        [
+          [
+            "Market cap tops a trillion,",
+            0
+          ]
+        ],
+        [
+          [
+            "crowned",
+            0
+          ],
+          [
+            "world's richest man.",
+            1
+          ]
+        ]
+      ],
+      "quote": "When something is possible, it will happen."
+    },
+    {
+      "id": "s8",
+      "dur": 6,
+      "kp": [
+        7,
+        8
+      ],
+      "candles": 18,
+      "vol": 0.17,
+      "shape": 0.8,
+      "headline": [
+        [
+          [
+            "Buys Twitter at the peak,",
+            0
+          ]
+        ],
+        [
+          [
+            "media firestorm,",
+            0
+          ],
+          [
+            "shares crater.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s9",
+      "dur": 6.5,
+      "kp": [
+        8,
+        9
+      ],
+      "candles": 22,
+      "vol": 0.15,
+      "shape": 1.6,
+      "headline": [
+        [
+          [
+            "Starship's jaw-dropping catch,",
+            0
+          ]
+        ],
+        [
+          [
+            "robot arms",
+            0
+          ],
+          [
+            "grab the future.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s10",
+      "dur": 6,
+      "kp": [
+        9,
+        10
+      ],
+      "candles": 20,
+      "vol": 0.1,
+      "shape": 1.4,
+      "headline": [
+        [
+          [
+            "Business empire expands without limit,",
+            0
+          ]
+        ],
+        [
+          [
+            "crosses into",
+            0
+          ],
+          [
+            "trillionaire territory.",
+            1
+          ]
+        ]
+      ],
+      "quote": "We must become a multi-planet species."
+    },
+    {
+      "id": "s11",
+      "dur": 6,
+      "kp": [
+        10,
+        10
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "He isn't trading stocks,",
+            0
+          ]
+        ],
+        [
+          [
+            "he's going long on human civilization,",
+            0
+          ]
+        ],
+        [
+          [
+            "betting on the future.",
+            1
+          ]
+        ]
+      ],
+      "quote": "Take life beyond Earth."
+    }
+  ],
+  "voice": {
+    "intro": "To understand Musk is to understand the most wildly aggressive long bettor of our time.",
+    "outro": "Several times on the brink of bankruptcy, each time pushing his entire fortune onto the table. He rewrote the rules of commercial spaceflight and electric vehicles, then set his sights on the stars and the sea.",
+    "style": "aria"
+  },
+  "template": "classic",
+  "bgm_style": "electronic-pulse",
+  "bgm_tags": "modern electronic, pulsing synths, driving beat, futuristic",
+  "lang": "en",
+  "translated": {
+    "from": "elonmusk.json",
+    "at": "2026-10-27",
+    "by": "opencode/deepseek-v4.1-flash"
+  }
+}

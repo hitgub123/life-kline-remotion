@@ -12,7 +12,8 @@
     "agent": "node agent/bot.mjs",
     "music": "node tools/generate-music.mjs",
     "voice": "node tools/make-voice.mjs",
-    "mix": "node tools/mix-audio.mjs"
+    "mix": "node tools/mix-audio.mjs",
+    "topics": "node tools/topic-ideas.mjs"
   },
   "keywords": [],
   "author": "",

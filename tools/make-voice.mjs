@@ -113,7 +113,8 @@ async function synth(text, name) {
     if (!key) throw new Error("gemini 引擎需要环境变量 GEMINI_API_KEY");
     const prompt = profile.style ? `${profile.style}\n\n朗读以下文字：\n${text}` : text;
     const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent",
+      // TTS 模型可由 GEMINI_TTS_MODEL 覆盖；默认 3.8-flash-tts（2.5-flash-preview-tts 已对新用户下线，2026-10-26 实测名单）
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_TTS_MODEL || "gemini-3.8-flash-tts"}:generateContent`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
