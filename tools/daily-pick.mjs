@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 /**
- * 每日自动定版选题：给定日期（默认今天，Asia/Tokyo），自动选出当天要生产的 2 人。
+ * 每日自动定版选题：给定日期（默认今天，Asia/Tokyo），按当天名人成色自动定版生产名单。
  * 数据链与 tools/topic-ideas.mjs 完全一致（OnThisDay 名单 → Wikidata 核验 →
- * 黑名单硬过滤 → LLM 按中国知名度+人生起伏重排），差别在「定版」语义：
- * - 已生产过的人（src/data/registry.ts 已注册 id + src/data/*.json 及其中主角名）直接剔除，不只是打标；
- * - 历史已选过的人（tools/pick-history.json，本工具自维护）剔除，选后把本次结果追加记录；
- * - 生日池可选不足目标数时，用同一天忌日（OnThisDay deaths）池按同一套筛法补位；
- * - LLM 不可用时降级为热度序定版并注明（黑名单与查重仍生效，绝不绕过）。
+ * 黑名单硬过滤 → LLM 按中国知名度+人生起伏重排），定版规则（作者 2026-11-08 定）：
+ * - 人数不固定：china_fame 与 arc 双达标的「高成档」全部入选，封顶 PICK_CAP 个防算力爆掉；
+ *   一个达标的都没有时保底取排名第 1（生产与发布脱钩，成片先囤成库存，发布节奏另行安排）；
+ * - 不避已生产/已选过的人：同个人物隔段时间重做没有问题。tools/pick-history.json
+ *   只做只读日志（记哪天选了谁，供查账），绝不用作过滤；
+ * - 黑名单是内容红线，硬门照旧；生日池连保底都凑不出（池空）时用忌日池补位；
+ * - LLM 不可用时降级：按全球热度分档定版并注明（黑名单仍生效）。
  * HTTP 层：fetch 优先；若 fetch 整体不通（某些环境 Node 不走代理会黑洞），
  * 自动回退 curl 子进程，保证在本机与用户机上都能跑（回退会在 stderr 注明一次）。
  *
- * 用法: node tools/daily-pick.mjs [YYYY-MM-DD|MM-DD] [--count 2] [--min 20] [--no-rank] [--no-record]
+ * 用法: node tools/daily-pick.mjs [YYYY-MM-DD|MM-DD] [--cap 4] [--min 20] [--no-rank] [--no-record]
  * 输出: 人读摘要 + `---JSON---` 后的机器可读 JSON（同时落盘 out/daily-pick-<日期>.json）。
- * JSON 形如 { date, count, picks: [{name, id, qid, source: "生日"|"忌日", reason, years, desc}], degraded?: bool }
+ * JSON 形如 { date, thresholds, picks: [{name, id, qid, source, tier, china_fame, arc, reason}], degraded?: bool }
  */
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
@@ -32,7 +34,11 @@ const flagVal = (n) => {
   const i = args.indexOf(`--${n}`);
   return i >= 0 ? args[i + 1] : null;
 };
-const count = Math.max(1, parseInt(flagVal("count") || "2", 10) || 2);
+// ── 定版分档阈值（可调常量；作者口径：双高全取、封顶防爆、保底 1 个）──
+const TIER_FAME_MIN = 70; // 高成档：中国知名度（china_fame）下限
+const TIER_ARC_MIN = 60; // 高成档：人生起伏（arc）下限
+const PICK_CAP = Math.max(1, parseInt(flagVal("cap") || "4", 10) || 4); // 每日入选上限（--cap 可覆盖）
+const TIER_HEAT_MIN = 100; // LLM 无分数时的降级高成档：全球热度（维基收录语言数）下限
 const minLinks = parseInt(flagVal("min") || "20", 10);
 const noRank = args.includes("--no-rank");
 const noRecord = args.includes("--no-record");
@@ -54,28 +60,7 @@ if (!m || !d || m < 1 || m > 12 || d < 1 || d > 31) {
 const pad = (n) => String(n).padStart(2, "0");
 const dateStr = `${y}-${pad(m)}-${pad(d)}`;
 
-// ---------- 已做过的人：registry 已注册 id + src/data/*.json（文件名与主角名） ----------
-const doneIds = new Set();
-const doneNames = new Set();
-const dataDir = join(ROOT, "src/data");
-const regPath = join(dataDir, "registry.ts");
-if (existsSync(regPath)) {
-  const reg = readFileSync(regPath, "utf8");
-  for (const mm of reg.matchAll(/\{ id: "([A-Za-z0-9]+)"/g)) doneIds.add(mm[1].toLowerCase());
-  for (const mm of reg.matchAll(/from "\.\/([A-Za-z0-9.]+)\.json"/g)) doneIds.add(mm[1].toLowerCase());
-}
-if (existsSync(dataDir)) {
-  for (const f of readdirSync(dataDir)) {
-    if (!f.endsWith(".json")) continue;
-    doneIds.add(f.replace(/\.json$/, "").toLowerCase());
-    try {
-      const j = JSON.parse(readFileSync(join(dataDir, f), "utf8"));
-      if (j.subject?.name) doneNames.add(j.subject.name);
-    } catch {}
-  }
-}
-
-// ---------- 历史已选：tools/pick-history.json ----------
+// ---------- 历史日志：tools/pick-history.json（只记账，绝不用作过滤） ----------
 const histPath = join(ROOT, "tools/pick-history.json");
 let history = { picks: [] };
 if (existsSync(histPath)) {
@@ -84,9 +69,6 @@ if (existsSync(histPath)) {
     if (!Array.isArray(history.picks)) history.picks = [];
   } catch {}
 }
-const histQids = new Set(history.picks.map((p) => p.qid).filter(Boolean));
-const histNames = new Set(history.picks.map((p) => p.name).filter(Boolean));
-const histIds = new Set(history.picks.map((p) => (p.id || "").toLowerCase()).filter(Boolean));
 
 // ---------- 黑名单（第一道筛，与 topic-ideas 同口径） ----------
 const blPath = join(ROOT, "tools/topic-blacklist.json");
@@ -227,17 +209,15 @@ async function gatherPool(kind) {
   return people;
 }
 
-// 剔除：黑名单（硬门）→ 已生产 → 历史已选
-function usablePool(people) {
+// 过门：只过黑名单硬门（内容红线）。已生产/已选过一律不避（作者定）。
+function gatePool(people) {
   const out = [];
-  const dropped = { blacklist: 0, done: 0, history: 0 };
+  let blocked = 0;
   for (const p of people) {
-    if (blHit(p)) dropped.blacklist++;
-    else if (doneIds.has(p.id.toLowerCase()) || doneNames.has(p.name)) dropped.done++;
-    else if (histQids.has(p.qid) || histNames.has(p.name) || histIds.has(p.id.toLowerCase())) dropped.history++;
+    if (blHit(p)) blocked++;
     else out.push(p);
   }
-  return { out, dropped };
+  return { out, blocked };
 }
 
 // ---------- 第二道筛：LLM 重排（与 topic-ideas 同提示词/同通道韧性） ----------
@@ -314,64 +294,69 @@ async function orderPool(pool, kindLabel) {
     const excl = new Set((parsed.excluded || []).map((x) => x.name));
     return { ordered: [...ranked, ...rest.filter((p) => !excl.has(p.name))], degraded: false, by };
   } catch (e) {
-    console.error(`（LLM 过筛没跑成：${e.message}。降级为热度序定版，黑名单与查重仍生效。）`);
+    console.error(`（LLM 过筛没跑成：${e.message}。降级为热度序定版，黑名单硬门仍生效。）`);
     return { ordered: pool, degraded: true, by: "" };
   }
 }
 
+// ---------- 分档定版：双高全取（封顶 PICK_CAP），无达标则保底第 1 名 ----------
+function tierSelect(ordered) {
+  if (!ordered.length) return [];
+  const scored = ordered.filter((p) => p.china_fame != null && p.arc != null);
+  if (scored.length) {
+    const high = scored.filter((p) => p.china_fame >= TIER_FAME_MIN && p.arc >= TIER_ARC_MIN);
+    if (high.length) return high.slice(0, PICK_CAP).map((p) => ({ ...p, tier: "高成" }));
+    return [{ ...ordered[0], tier: "保底" }];
+  }
+  // 无分数（LLM 降级）：按全球热度分档
+  const hot = ordered.filter((p) => p.links >= TIER_HEAT_MIN);
+  if (hot.length) return hot.slice(0, PICK_CAP).map((p) => ({ ...p, tier: "高成·热度降级" }));
+  return [{ ...ordered[0], tier: "保底·热度降级" }];
+}
+
 // ---------- 主流程 ----------
-const picks = [];
 let degraded = false;
 let rankBy = "";
 const birthAll = await gatherPool("births");
-const birthPool = usablePool(birthAll);
-console.error(
-  `生日池：核验后 ${birthAll.length} 人 → 剔除 黑名单 ${birthPool.dropped.blacklist} / 已生产 ${birthPool.dropped.done} / 历史已选 ${birthPool.dropped.history} → 可用 ${birthPool.out.length} 人`
-);
-{
-  const { ordered, degraded: dg, by } = await orderPool(birthPool.out, "出生");
-  degraded = degraded || dg;
-  if (by) rankBy = by;
-  for (const p of ordered) {
-    if (picks.length >= count) break;
-    picks.push(p);
-  }
-}
-if (picks.length < count) {
+const birthPool = gatePool(birthAll);
+console.error(`生日池：核验后 ${birthAll.length} 人 → 黑名单拦下 ${birthPool.blocked} → 可用 ${birthPool.out.length} 人`);
+const birthOrdered = await orderPool(birthPool.out, "出生");
+degraded = degraded || birthOrdered.degraded;
+if (birthOrdered.by) rankBy = birthOrdered.by;
+let picks = tierSelect(birthOrdered.ordered);
+if (!picks.length) {
   const deathAll = await gatherPool("deaths");
-  const pickedQids = new Set(picks.map((p) => p.qid));
-  const deathPool = usablePool(deathAll.filter((p) => !pickedQids.has(p.qid)));
-  console.error(
-    `忌日池补位：核验后 ${deathAll.length} 人 → 剔除 黑名单 ${deathPool.dropped.blacklist} / 已生产 ${deathPool.dropped.done} / 历史已选 ${deathPool.dropped.history} → 可用 ${deathPool.out.length} 人`
-  );
-  const { ordered, degraded: dg, by } = await orderPool(deathPool.out, "逝世");
-  degraded = degraded || dg;
-  if (by) rankBy = rankBy || by;
-  for (const p of ordered) {
-    if (picks.length >= count) break;
-    picks.push(p);
-  }
+  const deathPool = gatePool(deathAll);
+  console.error(`生日池为空，忌日池补位：核验后 ${deathAll.length} 人 → 黑名单拦下 ${deathPool.blocked} → 可用 ${deathPool.out.length} 人`);
+  const deathOrdered = await orderPool(deathPool.out, "逝世");
+  degraded = degraded || deathOrdered.degraded;
+  if (deathOrdered.by) rankBy = rankBy || deathOrdered.by;
+  picks = tierSelect(deathOrdered.ordered);
 }
 
 const result = {
   date: dateStr,
-  count,
+  thresholds: { fameMin: TIER_FAME_MIN, arcMin: TIER_ARC_MIN, cap: PICK_CAP, heatMin: TIER_HEAT_MIN },
   picks: picks.map((p) => ({
     name: p.name,
     id: p.id,
     qid: p.qid,
     source: p.source,
+    tier: p.tier,
+    ...(p.china_fame != null ? { china_fame: p.china_fame, arc: p.arc } : {}),
     years: p.years,
     desc: p.desc,
-    reason: p.reason || (p.china_fame != null ? `中国知名度 ${p.china_fame} · 起伏 ${p.arc}` : `全球热度 ${p.links}（热度序定版）`),
+    reason:
+      p.reason ||
+      (p.china_fame != null ? `中国知名度 ${p.china_fame} · 起伏 ${p.arc}` : `全球热度 ${p.links}（热度序）`),
   })),
   ...(rankBy ? { rankedBy: rankBy } : {}),
   ...(degraded ? { degraded: true } : {}),
 };
 
-// 记录历史（--no-record 只演算不落账）
+// 记入历史日志（只查账用，不参与任何过滤；--no-record 只演算不落账）
 if (picks.length && !noRecord) {
-  for (const p of result.picks) history.picks.push({ date: dateStr, name: p.name, id: p.id, qid: p.qid, source: p.source });
+  for (const p of result.picks) history.picks.push({ date: dateStr, name: p.name, id: p.id, qid: p.qid, source: p.source, tier: p.tier });
   writeFileSync(histPath, JSON.stringify(history, null, 2) + "\n");
 }
 mkdirSync(join(ROOT, "out"), { recursive: true });
@@ -379,13 +364,16 @@ const outPath = join(ROOT, "out", `daily-pick-${dateStr}.json`);
 writeFileSync(outPath, JSON.stringify(result, null, 2) + "\n");
 
 // 人读摘要
-console.log(`\n🗓 ${dateStr} 每日定版（目标 ${count} 人${rankBy ? `，过筛 ${rankBy}` : ""}${degraded ? "，⚠ LLM 降级·热度序" : ""}）：`);
-if (!picks.length) console.log("（今天没有可选的人——池子被黑名单/已生产/历史过滤清空了，放宽 --min 或换日期再试）");
+console.log(
+  `\n🗓 ${dateStr} 每日定版（高成档：知名度≥${TIER_FAME_MIN} 且 起伏≥${TIER_ARC_MIN}，封顶 ${PICK_CAP}，保底 1${rankBy ? `，过筛 ${rankBy}` : ""}${degraded ? "，⚠ LLM 降级·热度分档" : ""}）：`
+);
+if (!picks.length) console.log("（今天生日/忌日池都被黑名单或核验清空了，换日期或放宽 --min 再试）");
 result.picks.forEach((p, i) => {
-  console.log(`${i + 1}. ${p.name}（${p.years}）· ${p.source} · id 建议 ${p.id}`);
+  const score = p.china_fame != null ? `知名度 ${p.china_fame} · 起伏 ${p.arc}` : `热度 ${picks[i].links}`;
+  console.log(`${i + 1}. ${p.name}（${p.years}）· ${p.source} · 【${p.tier}】${score} · id 建议 ${p.id}`);
   console.log(`   ${p.desc || "（无简介）"} · 入选理由：${p.reason}`);
 });
-console.log(`JSON：${outPath.replace(ROOT + "/", "")}${noRecord ? "（--no-record：未记入 pick-history）" : `，已记入 tools/pick-history.json`}`);
+console.log(`JSON：${outPath.replace(ROOT + "/", "")}${noRecord ? "（--no-record：未记入 pick-history）" : `，已记入 tools/pick-history.json（仅日志）`}`);
 console.log("---JSON---");
 console.log(JSON.stringify(result));
-if (picks.length < count) process.exitCode = 2;
+if (!picks.length) process.exitCode = 2;

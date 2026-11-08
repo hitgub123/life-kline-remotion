@@ -13,6 +13,38 @@
       "id": "KazuoIshiguro",
       "qid": "Q272855",
       "source": "生日"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "阿兰·德龙",
+      "id": "AlainDelon",
+      "qid": "Q106529",
+      "source": "生日",
+      "tier": "高成·热度降级"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "石黑一雄",
+      "id": "KazuoIshiguro",
+      "qid": "Q272855",
+      "source": "生日",
+      "tier": "高成·热度降级"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "布莱姆·斯托克",
+      "id": "BramStoker",
+      "qid": "Q36184",
+      "source": "生日",
+      "tier": "高成·热度降级"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "玛格丽特·米切尔",
+      "id": "MargaretMitchell",
+      "qid": "Q173540",
+      "source": "生日",
+      "tier": "高成·热度降级"
     }
   ]
 }
