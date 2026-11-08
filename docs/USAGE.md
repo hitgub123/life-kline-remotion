@@ -245,6 +245,17 @@ make-voice 逐句 TTS（默认 edge-tts 音色 zh-CN-YunyangNeural，`pip instal
 「✓已做/在世」标记。`--no-rank` 跳过 LLM 只出原始热度榜；`--min 40` 只要顶流；`--limit 10` 控制条数。
 produce 生产入口另有黑名单硬拦截：名单内人物用 /make 或命令行都做不出来（防绕过选题直接下单）。
 
+## 每日自动定版（daily-pick）
+
+`npm run daily-pick`（或 `node tools/daily-pick.mjs 2026-11-08`）：按日期自动定版当天要生产的人，
+不用人挑。数据链与 topic-ideas 相同（名单→Wikidata 核验→黑名单硬门→LLM 重排），定版按成色分档
+（阈值在 daily-pick.mjs 顶部常量）：china_fame≥70 且 arc≥60 的「高成档」全部入选、封顶 4 个；
+没有达标者时保底取第 1 名。**不避已生产/已选过的人**（隔段时间重做无妨）；
+`tools/pick-history.json` 只记账（哪天选了谁），不参与过滤。生日池为空时自动用忌日池补位。
+输出人读摘要 + 机器可读 JSON（落盘 `out/daily-pick-<日期>.json`，每人带档位与分数）。
+`--cap N` 改封顶，`--no-rank` 跳过 LLM（按热度分档），`--no-record` 只演算不记账。
+生产与发布脱钩：定版名单只是「库存」排产，发布节奏另行安排，生产侧不节流。
+
 ## 进阶：多语言版（日/英）
 
 同一份脚本可以出日文、英文版：K 线数据骨架（关键点、形状、时长、BGM）三语共用，只翻文字层。
@@ -259,3 +270,15 @@ node tools/translate-script.mjs src/data/elonmusk.json --to en     # 只出英�
 - 音色：日文默认 nanami、英语默认 aria（edge 免费线）；Gemini 的 kore 一把声音可读中日英，适合打样与高级线。make-voice 用 `--style` 可临时覆盖。
 - 版面：模板已做多语言自适应——标题组、底部名言、片头人名/标题会按实测宽度自动缩字号防溢出；英文版自动换 Playfair Display 展示衬线并保留词距；界面固定词（年/岁、退市印章）按 `lang` 切换（EN: Age/DELISTED，JA: 歳/上場廃止）。中文版面不受影响。
 - 通道口径同生成器：Gemini 3.8 主、DeepSeek Flash 备，`--provider` 可钉死。
+- 一键三语：`node tools/produce.mjs "人名" --id X --langs ja,en` 会在中文主流程后逐语言跑
+  翻译→渲染→配音→合成（沿用中文版同一首 BGM），产出 `out/<id>-ja-final.mp4` / `out/<id>-en-final.mp4`。
+  每语言独立断点续跑、独立成败；配音失败时跳过该语言（不出无声片），小结逐语言报告。
+  `--dry-run` 只打印各语言的步骤计划不真跑，无 API 环境可验线。不带 `--langs` 时行为与以前一致。
+
+## 封面（make-cover）
+
+`npm run cover -- src/data/elonmusk.json`（或 `node tools/make-cover.mjs src/data/elonmusk.json [--only bili,douyin,yt]`）：
+从脚本生成人名大字 + keypoints 走势缩略线 + 钩子句（voice.intro）封面，视觉与主视频一致
+（宣纸底、宋体、朱红）。规格：B站 1600x1000、抖音 1200x1600、YouTube 1920x1080，
+产物在 `out/covers/<id>-cover-<规格>.png`。实现为 Remotion still（src/Cover.tsx 的
+CoverBili/CoverDouyin/CoverYt 三个 Composition，make-cover 用 --props 注入任意人物脚本）。
