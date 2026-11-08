@@ -8,6 +8,13 @@
  *   node tools/produce.mjs "辛弃疾" --id XinQiji
  *   node tools/produce.mjs "辛弃疾" --id XinQiji --bgm ~/音乐/某首.mp3
  *   node tools/produce.mjs "辛弃疾" --id XinQiji --skip-review --force
+ *   node tools/produce.mjs "马斯克" --id ElonMusk --langs ja,en   # 中文跑完后顺带出日/英版
+ *   node tools/produce.mjs "马斯克" --id ElonMusk --langs ja,en --dry-run  # 只打印计划不真跑
+ *
+ * --langs 多语言：中文主流程完成后，对每个附加语言依次 翻译→渲染→配音→合成，
+ * 产出 out/<id>-<lang>-final.mp4（沿用中文版同一首已定 BGM）。每语言独立断点续跑、
+ * 独立成败：某语言失败只跳过它，不拖垮其他语言与中文成品；配音失败时宁可跳过
+ * 该语言也绝不静默产出无声片。默认不带 --langs 时行为与以前完全一致（仅中文）。
  *
  * 环境变量: GEMINI_API_KEY（生成/审查）, DEEPSEEK_API_KEY（审查异源，优先）,
  * 本机需装好 edge-tts（配音）。BGM 不给 --bgm 时：按脚本 bgm_style 从曲库
@@ -43,8 +50,24 @@ const force = args.includes("--force");
 const skipReview = args.includes("--skip-review");
 const skipVoice = args.includes("--skip-voice");
 const noAutoBgm = args.includes("--no-auto-bgm");
+const dryRun = args.includes("--dry-run");
+// 多语言版（--langs ja,en）：语言元数据与 translate-script 的口径保持一致
+const LANG_META = {
+  ja: { suffix: "Ja", label: "日语", voice: "nanami" },
+  en: { suffix: "En", label: "英语", voice: "aria" },
+};
+const langs = flag("langs", "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+for (const l of langs) {
+  if (!LANG_META[l]) {
+    console.error(`--langs 不支持的语言：${l}（只支持 ${Object.keys(LANG_META).join("/")}）`);
+    process.exit(1);
+  }
+}
 if (!name || !id || !/^[A-Za-z][A-Za-z0-9]*$/.test(id)) {
-  console.error('用法: node tools/produce.mjs "人名" --id EnglishId [--bgm 曲.mp3] [--provider gemini] [--skip-review] [--force]');
+  console.error('用法: node tools/produce.mjs "人名" --id EnglishId [--bgm 曲.mp3] [--provider gemini] [--skip-review] [--force] [--langs ja,en] [--dry-run]');
   console.error("（id 由调用者给：人物姓名的拼音连写，如 SuShi / XinQiji）");
   process.exit(1);
 }
@@ -71,6 +94,42 @@ const scriptPath = join(ROOT, scriptRel);
 const videoPath = join(ROOT, "out", `${base}.mp4`);
 const voicePath = join(ROOT, "out", `${base}-voice.wav`);
 const finalPath = join(ROOT, "out", `${base}-final.mp4`);
+
+// 从 registry 反查某份脚本（如 elonmusk.ja）注册的 Composition id
+function compIdFor(baseFile) {
+  try {
+    const reg = readFileSync(join(ROOT, "src/data/registry.ts"), "utf8");
+    const imp = reg.match(new RegExp(`import ([A-Za-z0-9]+) from "\\./${baseFile.replace(/\./g, "\\.")}\\.json";`));
+    if (imp) {
+      const entry = reg.match(new RegExp(`\\{ id: "([A-Za-z0-9]+)", data: ${imp[1]} as unknown as ScriptData \\}`));
+      if (entry) return entry[1];
+    }
+  } catch {}
+  return null;
+}
+
+// --dry-run：只打印中文主流程 + 各语言将执行的步骤计划，不真跑（无 API/无音频环境验线用）
+if (dryRun) {
+  const plan = (cond) => (cond ? "跳过（已完成/最新）" : "执行");
+  console.log(`[dry-run] ${name}（${id}）生产计划，不执行任何步骤：`);
+  console.log(`  中文 1/6 取材：${plan(existsSync(join(ROOT, "src/data/people", base + ".md")) && !force)} → src/data/people/${base}.md`);
+  console.log(`  中文 2/6 生成：${plan(existsSync(scriptPath) && !force)} → ${scriptRel}`);
+  console.log(`  中文 3/6 事实核查：${skipReview ? "跳过（--skip-review）" : "执行（失败不拦生产）"}`);
+  console.log(`  中文 4/6 渲染：${plan(existsSync(videoPath) && !force)} → out/${base}.mp4（Composition ${id}）`);
+  console.log(`  中文 5/6 配音：${skipVoice ? "跳过（--skip-voice）" : plan(existsSync(voicePath) && !force)} → out/${base}-voice.wav`);
+  console.log(`  中文 6/6 合成：${bgm ? `手动 BGM ${bgm}` : "自动选曲（与语言版共用同一首）"} → out/${base}-final.mp4`);
+  for (const lang of langs) {
+    const meta = LANG_META[lang];
+    const lScriptPath = join(ROOT, "src/data", `${base}.${lang}.json`);
+    const compId = compIdFor(`${base}.${lang}`) || id + meta.suffix;
+    console.log(`  ${meta.label}版（${lang}）：`);
+    console.log(`    翻译：${plan(existsSync(lScriptPath) && !force)} tools/translate-script.mjs ${scriptRel} --to ${lang} → src/data/${base}.${lang}.json`);
+    console.log(`    渲染：Composition ${compId} → out/${base}-${lang}.mp4`);
+    console.log(`    配音：音色 ${meta.voice} → out/${base}-${lang}-voice.wav（失败则跳过该语言，不出无声片）`);
+    console.log(`    合成：沿用中文版同一首 BGM → out/${base}-${lang}-final.mp4`);
+  }
+  process.exit(0);
+}
 
 // 运行日志：全程输出（每步标题+子工具输出+小结）同步落盘到 out/logs/，
 // 事后可查「哪一步发生了什么」；小结里会打印日志路径，agent 转达时也能看到。
@@ -177,4 +236,64 @@ BGM 状态：${bgm ? `手动指定（${bgm}）` : bgmPick ? `已自动配乐（$
 if (!bgmPath) {
   console.log(`音乐提示词: node tools/music-prompt.mjs ${scriptRel}`);
   console.log(`补混命令:   node tools/mix-audio.mjs out/${base}.mp4 --bgm <曲子文件>${voiceMade ? ` --voice out/${base}-voice.wav` : ""} --out out/${base}-final.mp4`);
+}
+
+// ── 多语言版（--langs）：中文成品之后逐语言跑 翻译→渲染→配音→合成 ──
+// 每语言独立断点续跑、独立成败；配音失败宁可跳过该语言，绝不静默出无声片。
+async function produceLang(lang) {
+  const meta = LANG_META[lang];
+  const tag = `${meta.label}版`;
+  const lScriptRel = `src/data/${base}.${lang}.json`;
+  const lScriptPath = join(ROOT, lScriptRel);
+  const lVideoPath = join(ROOT, "out", `${base}-${lang}.mp4`);
+  const lVoicePath = join(ROOT, "out", `${base}-${lang}-voice.wav`);
+  const lFinalPath = join(ROOT, "out", `${base}-${lang}-final.mp4`);
+  // 1 翻译（复用 translate-script：只翻文字层、注册 Composition、按语言换音色）
+  if (!existsSync(lScriptPath) || force)
+    await run(`多语言·${tag} 1/4 翻译脚本`, "node", ["tools/translate-script.mjs", scriptRel, "--to", lang]);
+  else console.log(`=== 多语言·${tag} 1/4 翻译：脚本已存在，跳过 ===`);
+  const compId = compIdFor(`${base}.${lang}`) || id + meta.suffix;
+  // 2 渲染
+  const lStale = existsSync(lVideoPath) && existsSync(lScriptPath) && statSync(lVideoPath).mtimeMs < statSync(lScriptPath).mtimeMs;
+  if (!existsSync(lVideoPath) || force || lStale)
+    await run(`多语言·${tag} 2/4 渲染（${compId}）`, "npx", ["remotion", "render", compId, `out/${base}-${lang}.mp4`], { shell: process.platform === "win32" });
+  else console.log(`=== 多语言·${tag} 2/4 渲染：成片已是最新，跳过 ===`);
+  // 3 配音（音色由译本脚本 voice.style 决定：ja=nanami / en=aria）
+  let lVoiceMade = existsSync(lVoicePath) && !force;
+  if (!skipVoice && !lVoiceMade)
+    lVoiceMade = await tryRun(`多语言·${tag} 3/4 配音（${meta.voice}）`, "node", [
+      "tools/make-voice.mjs", lScriptRel, "--video", `out/${base}-${lang}.mp4`, "--out", `out/${base}-${lang}-voice.wav`,
+    ]);
+  if (skipVoice) console.log(`=== 多语言·${tag} 3/4 配音：按要求跳过 ===`);
+  if (!skipVoice && !lVoiceMade)
+    return `${tag}：⚠ 已跳过——配音失败（引擎不可达或合成出错），不产出无声片；修好后重跑 produce --langs ${lang} 即可单独补这一版`;
+  // 4 合成（沿用中文版同一首已定 BGM 与同一偏移）
+  const lMixArgs = [`out/${base}-${lang}.mp4`, "--out", `out/${base}-${lang}-final.mp4`];
+  if (bgmPath) {
+    lMixArgs.push("--bgm", bgmPath);
+    if (bgmOffset) lMixArgs.push("--bgm-offset", bgmOffset);
+  }
+  if (lVoiceMade) lMixArgs.push("--voice", `out/${base}-${lang}-voice.wav`);
+  let lFinal = lVideoPath;
+  if (bgmPath || lVoiceMade) {
+    const fresh =
+      existsSync(lFinalPath) &&
+      !force &&
+      statSync(lFinalPath).mtimeMs >= statSync(lVideoPath).mtimeMs &&
+      (!lVoiceMade || statSync(lFinalPath).mtimeMs >= statSync(lVoicePath).mtimeMs);
+    if (!fresh) await run(`多语言·${tag} 4/4 合成`, "node", ["tools/mix-audio.mjs", ...lMixArgs]);
+    else console.log(`=== 多语言·${tag} 4/4 合成：成品已是最新，跳过 ===`);
+    lFinal = lFinalPath;
+  }
+  return `${tag}：✓ ${lFinal.replace(ROOT + "/", "")}`;
+}
+if (langs.length) {
+  console.log(`\n──────── 多语言小结 ────────`);
+  for (const lang of langs) {
+    try {
+      console.log(await produceLang(lang));
+    } catch (e) {
+      console.log(`${LANG_META[lang].label}版：✗ 失败（${String(e.message || e).split("\n")[0].slice(0, 140)}），不影响其他语言与中文成品`);
+    }
+  }
 }
