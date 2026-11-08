@@ -14,7 +14,8 @@
     "voice": "node tools/make-voice.mjs",
     "mix": "node tools/mix-audio.mjs",
     "topics": "node tools/topic-ideas.mjs",
-    "daily-pick": "node tools/daily-pick.mjs"
+    "daily-pick": "node tools/daily-pick.mjs",
+    "cover": "node tools/make-cover.mjs"
   },
   "keywords": [],
   "author": "",
