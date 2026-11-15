@@ -1,0 +1,352 @@
+{
+  "subject": {
+    "name": "克劳德·莫奈",
+    "title": "人生K线图",
+    "birth_year": 1840,
+    "stock_label": "印象派股份 · 代码 1840",
+    "series": "人生切片"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "keypoints": [
+    [
+      6,
+      9,
+      null
+    ],
+    [
+      18,
+      8,
+      "母亲去世"
+    ],
+    [
+      27,
+      18,
+      "绿衣女子"
+    ],
+    [
+      31,
+      6,
+      "普法战争"
+    ],
+    [
+      35,
+      23,
+      "印象·日出"
+    ],
+    [
+      40,
+      5,
+      "卡米耶病逝"
+    ],
+    [
+      44,
+      14,
+      "定居吉维尼"
+    ],
+    [
+      51,
+      36,
+      "买下吉维尼"
+    ],
+    [
+      60,
+      48,
+      "睡莲"
+    ],
+    [
+      72,
+      18,
+      "爱丽丝去世"
+    ],
+    [
+      75,
+      14,
+      "长子去世"
+    ],
+    [
+      84,
+      18,
+      "白内障"
+    ],
+    [
+      87,
+      28,
+      "病逝吉维尼"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 24,
+      "vol": 0.07,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "少年卖炭笔，",
+            0
+          ]
+        ],
+        [
+          [
+            "母亲早逝。",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s2",
+      "dur": 6,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 20,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "巴黎学画，",
+            0
+          ],
+          [
+            "绿衣成名。",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s3",
+      "dur": 6,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 24,
+      "vol": 0.16,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "普法战争，",
+            1
+          ],
+          [
+            "避走伦敦。",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s4",
+      "dur": 6,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 22,
+      "vol": 0.14,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "一幅《日出》，",
+            0
+          ],
+          [
+            "被嘲成派。",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s5",
+      "dur": 6,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 26,
+      "vol": 0.18,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "画作难卖，",
+            0
+          ]
+        ],
+        [
+          [
+            "爱妻病逝。",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s6",
+      "dur": 6.5,
+      "kp": [
+        5,
+        7
+      ],
+      "candles": 18,
+      "vol": 0.12,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "爱妻走后，",
+            1
+          ]
+        ],
+        [
+          [
+            "他买下花园。",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s7",
+      "dur": 6.5,
+      "kp": [
+        7,
+        8
+      ],
+      "candles": 30,
+      "vol": 0.08,
+      "shape": 1.7,
+      "headline": [
+        [
+          [
+            "睡莲入画，",
+            0
+          ],
+          [
+            "身价冲顶。",
+            1
+          ]
+        ]
+      ],
+      "quote": "我的花园，是我最美的作品"
+    },
+    {
+      "id": "s8",
+      "dur": 7,
+      "kp": [
+        8,
+        11
+      ],
+      "candles": 26,
+      "vol": 0.13,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "晚年丧亲，",
+            1
+          ],
+          [
+            "视力渐暗。",
+            0
+          ]
+        ]
+      ],
+      "quote": "色彩是我终日的痴迷、喜悦与折磨"
+    },
+    {
+      "id": "s9",
+      "dur": 6,
+      "kp": [
+        11,
+        12
+      ],
+      "candles": 14,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "他仍在画，",
+            0
+          ]
+        ],
+        [
+          [
+            "病逝吉维尼。",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "stamp": true
+    },
+    {
+      "id": "s10",
+      "dur": 6,
+      "kp": [
+        12,
+        12
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "他退市了。",
+            0
+          ]
+        ],
+        [
+          [
+            "作品，",
+            0
+          ],
+          [
+            "涨了一百年。",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "rocket": true
+    }
+  ],
+  "voice": {
+    "intro": "克劳德·莫奈，用光影重画世界。",
+    "outro": "他一生追逐光线，贫穷与丧妻没有让画笔停下。晚年视力衰退，他仍把吉维尼的睡莲画成永恒。市场会给作品标价，但时间只为真正的光留下位置。",
+    "style": "xiaoxiao"
+  },
+  "template": "classic",
+  "bgm_style": "hisaishi-style",
+  "bgm_tags": "Joe Hisaishi style orchestral, lyrical piano arpeggios, warm strings and woodwinds, nostalgic wonder",
+  "factcheck": {
+    "by": "gemini/gemini-3.8-flash",
+    "at": "2026-11-15",
+    "verdict": "pass",
+    "issues": 0,
+    "source": "src/data/people/claudemonet.md"
+  }
+}

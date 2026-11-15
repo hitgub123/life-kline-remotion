@@ -1,0 +1,378 @@
+{
+  "subject": {
+    "name": "Emperor Guangxu",
+    "title": "Life Candlestick Chart",
+    "birth_year": 1871,
+    "stock_label": "Tragic Last Emperor · Code 1871",
+    "series": "Life Slices"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "template": "classic",
+  "bgm_style": "cinematic-piano",
+  "voice": {
+    "intro": "He is Emperor Guangxu, born Zaitian—never willing to preside over a fallen nation, yet trapped in the inner palace for thirty years.",
+    "outro": "Taken into the palace as a child and made a puppet, his reform in his prime ended in smoke. He fought hard at the vortex of a changing era, but never crossed the deep-palace moat of power, leaving only an unfinished sigh.",
+    "style": "aria"
+  },
+  "keypoints": [
+    [
+      1,
+      9,
+      null
+    ],
+    [
+      5,
+      22,
+      "Succeeds to the Throne"
+    ],
+    [
+      11,
+      18,
+      null
+    ],
+    [
+      19,
+      30,
+      "Wedding and Personal Rule"
+    ],
+    [
+      25,
+      16,
+      "Shame of Shimonoseki"
+    ],
+    [
+      28,
+      48,
+      "Hundred Days' Reform"
+    ],
+    [
+      29,
+      6,
+      "Imprisoned at Yingtai"
+    ],
+    [
+      30,
+      4,
+      "Gengzi Humiliation"
+    ],
+    [
+      32,
+      7,
+      null
+    ],
+    [
+      38,
+      5,
+      "Sudden Death at Yingtai"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6.5,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 22,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "At four, into the palace,",
+            0
+          ]
+        ],
+        [
+          [
+            "Thrust onto the throne.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s2",
+      "dur": 6,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 18,
+      "vol": 0.08,
+      "shape": 0.9,
+      "headline": [
+        [
+          [
+            "Two empress dowagers behind the curtain,",
+            0
+          ]
+        ],
+        [
+          [
+            "A mere",
+            0
+          ],
+          [
+            "puppet child sovereign.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s3",
+      "dur": 6.5,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 20,
+      "vol": 0.11,
+      "shape": 1.1,
+      "headline": [
+        [
+          [
+            "At nineteen, he weds,",
+            0
+          ]
+        ],
+        [
+          [
+            "In name,",
+            0
+          ],
+          [
+            "he takes the reins.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s4",
+      "dur": 6,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 16,
+      "vol": 0.16,
+      "shape": 0.8,
+      "headline": [
+        [
+          [
+            "After Jiawu defeat,",
+            1
+          ]
+        ],
+        [
+          [
+            "Land ceded, indemnity paid,",
+            1
+          ],
+          [
+            "the realm sinks.",
+            0
+          ]
+        ]
+      ],
+      "quote": "I will not be the emperor who loses the nation"
+    },
+    {
+      "id": "s5",
+      "dur": 7,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 24,
+      "vol": 0.15,
+      "shape": 1.6,
+      "headline": [
+        [
+          [
+            "Issues reform decree,",
+            0
+          ]
+        ],
+        [
+          [
+            "Stakes all",
+            1
+          ],
+          [
+            "on new policies.",
+            0
+          ]
+        ]
+      ],
+      "quote": "Let high and low unite to accomplish the new reform"
+    },
+    {
+      "id": "s6",
+      "dur": 6.5,
+      "kp": [
+        5,
+        6
+      ],
+      "candles": 16,
+      "vol": 0.18,
+      "shape": 0.7,
+      "headline": [
+        [
+          [
+            "Hundred Days' Reform shattered,",
+            1
+          ]
+        ],
+        [
+          [
+            "Locked away",
+            1
+          ],
+          [
+            "under Yingtai's cold moon.",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s7",
+      "dur": 6.5,
+      "kp": [
+        6,
+        7
+      ],
+      "candles": 18,
+      "vol": 0.17,
+      "shape": 0.9,
+      "headline": [
+        [
+          [
+            "Gengzi upheaval,",
+            0
+          ]
+        ],
+        [
+          [
+            "Flees west in panic,",
+            1
+          ],
+          [
+            "Zhenfei is drowned.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s8",
+      "dur": 6,
+      "kp": [
+        7,
+        8
+      ],
+      "candles": 14,
+      "vol": 0.08,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Xinchou return to the capital,",
+            0
+          ]
+        ],
+        [
+          [
+            "In the cold palace,",
+            0
+          ],
+          [
+            "lingering out his days.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s9",
+      "dur": 6.5,
+      "kp": [
+        8,
+        9
+      ],
+      "candles": 16,
+      "vol": 0.09,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "At thirty-eight,",
+            0
+          ]
+        ],
+        [
+          [
+            "Yingtai's last echo,",
+            1
+          ],
+          [
+            "dies with bitter regret.",
+            0
+          ]
+        ]
+      ],
+      "quote": null,
+      "stamp": true
+    },
+    {
+      "id": "s10",
+      "dur": 6,
+      "kp": [
+        9,
+        9
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "The emperor delists.",
+            0
+          ]
+        ],
+        [
+          [
+            "A century of sighs,",
+            0
+          ],
+          [
+            "an unfinished game.",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "rocket": true
+    }
+  ],
+  "bgm_tags": "cinematic piano and strings, emotional, gentle build to a moving climax",
+  "lang": "en",
+  "translated": {
+    "from": "guangxuemperor.json",
+    "at": "2026-11-15",
+    "by": "opencode/deepseek-v4.1-flash"
+  }
+}

@@ -1,0 +1,512 @@
+{
+  "subject": {
+    "name": "Zhao Kuangyin",
+    "title": "Life Candlestick Chart",
+    "birth_year": 927,
+    "stock_label": "Great Song Founding Co. · Ticker 0927",
+    "series": "Life Slices"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "keypoints": [
+    [
+      1,
+      9,
+      null
+    ],
+    [
+      22,
+      8,
+      "Joins Guo Wei"
+    ],
+    [
+      28,
+      15,
+      "Battle of Gaoping"
+    ],
+    [
+      33,
+      24,
+      "Palace Front Inspector"
+    ],
+    [
+      34,
+      48,
+      "Yellow Robe Coup"
+    ],
+    [
+      35,
+      46,
+      "Strips Military Power"
+    ],
+    [
+      37,
+      47,
+      "Pacifies Jinghu"
+    ],
+    [
+      39,
+      49,
+      "Conquers Later Shu"
+    ],
+    [
+      43,
+      46,
+      "Disarms Warlords"
+    ],
+    [
+      45,
+      49,
+      "Conquers Southern Han"
+    ],
+    [
+      50,
+      50,
+      "Conquers Southern Tang"
+    ],
+    [
+      50,
+      50,
+      "Dies"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6.5,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 18,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Luoyang's Jiema Camp,",
+            0
+          ],
+          [
+            "the Zhao family",
+            0
+          ],
+          [
+            "adds a son.",
+            0
+          ]
+        ],
+        [
+          [
+            "In chaos,",
+            0
+          ],
+          [
+            "the market opens,",
+            1
+          ],
+          [
+            "the boy leaves home.",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s2",
+      "dur": 6,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 16,
+      "vol": 0.12,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Joins Guo Wei's army,",
+            0
+          ],
+          [
+            "enters the ranks.",
+            0
+          ]
+        ],
+        [
+          [
+            "One battle at Gaoping,",
+            0
+          ],
+          [
+            "forges",
+            0
+          ],
+          [
+            "his worth.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s3",
+      "dur": 7,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 24,
+      "vol": 0.14,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Campaigns south against Southern Tang,",
+            0
+          ],
+          [
+            "win after win.",
+            0
+          ]
+        ],
+        [
+          [
+            "At 33,",
+            0
+          ],
+          [
+            "takes command of",
+            0
+          ],
+          [
+            "the imperial guards.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s4",
+      "dur": 6.5,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 22,
+      "vol": 0.16,
+      "shape": 1.7,
+      "headline": [
+        [
+          [
+            "At Chenqiao Post,",
+            0
+          ],
+          [
+            "the yellow robe",
+            1
+          ],
+          [
+            "goes on.",
+            0
+          ]
+        ],
+        [
+          [
+            "At 34,",
+            0
+          ],
+          [
+            "opens",
+            1
+          ],
+          [
+            "the Great Song.",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s5",
+      "dur": 7,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 18,
+      "vol": 0.12,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "New dynasty founded,",
+            0
+          ],
+          [
+            "first pacifies",
+            0
+          ],
+          [
+            "the Two Lis.",
+            1
+          ]
+        ],
+        [
+          [
+            "One cup of wine,",
+            0
+          ],
+          [
+            "takes back",
+            0
+          ],
+          [
+            "military power.",
+            1
+          ]
+        ]
+      ],
+      "quote": "Life is like a white colt passing a crevice."
+    },
+    {
+      "id": "s6",
+      "dur": 6,
+      "kp": [
+        5,
+        6
+      ],
+      "candles": 14,
+      "vol": 0.08,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "South first, north later,",
+            0
+          ],
+          [
+            "makes a move",
+            0
+          ],
+          [
+            "on Jinghu.",
+            1
+          ]
+        ],
+        [
+          [
+            "Borrows the route",
+            0
+          ],
+          [
+            "through Jiangling,",
+            0
+          ],
+          [
+            "and casually",
+            0
+          ],
+          [
+            "takes the city.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s7",
+      "dur": 6.5,
+      "kp": [
+        6,
+        7
+      ],
+      "candles": 20,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "After the cup,",
+            0
+          ],
+          [
+            "fiscal power",
+            0
+          ],
+          [
+            "returns to the capital.",
+            1
+          ]
+        ],
+        [
+          [
+            "At 39,",
+            0
+          ],
+          [
+            "Later Shu",
+            0
+          ],
+          [
+            "delists.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s8",
+      "dur": 7,
+      "kp": [
+        7,
+        9
+      ],
+      "candles": 28,
+      "vol": 0.15,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Another banquet,",
+            0
+          ],
+          [
+            "the warlords",
+            0
+          ],
+          [
+            "hand over power.",
+            1
+          ]
+        ],
+        [
+          [
+            "Southern Han",
+            0
+          ],
+          [
+            "at 45",
+            0
+          ],
+          [
+            "delists.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s9",
+      "dur": 6.5,
+      "kp": [
+        9,
+        11
+      ],
+      "candles": 16,
+      "vol": 0.12,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Southern Tang",
+            0
+          ],
+          [
+            "delists,",
+            1
+          ],
+          [
+            "the south",
+            0
+          ],
+          [
+            "returns to Song.",
+            0
+          ]
+        ],
+        [
+          [
+            "At 50,",
+            0
+          ],
+          [
+            "dies",
+            0
+          ],
+          [
+            "at Wansui Hall.",
+            1
+          ]
+        ]
+      ],
+      "quote": "How can I let another snore beside my bed?",
+      "stamp": true
+    },
+    {
+      "id": "s10",
+      "dur": 7,
+      "kp": [
+        11,
+        11
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "He",
+            0
+          ],
+          [
+            "delists",
+            1
+          ],
+          [
+            "now.",
+            0
+          ]
+        ],
+        [
+          [
+            "The Great Song's",
+            0
+          ],
+          [
+            "three hundred years—",
+            0
+          ],
+          [
+            "he opened it.",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "rocket": true
+    }
+  ],
+  "voice": {
+    "intro": "Emperor Taizu of Song, Zhao Kuangyin: one mutiny, and the Great Song opens.",
+    "outro": "He began with a yellow robe at Chenqiao Post, then spent sixteen years cleaning up the wreckage of the Five Dynasties. Military power to the capital, fiscal power to the court, the south to Song. The candle-shadow and axe-sound mystery he left for later generations to debate—but the first candlestick of the Great Song's three hundred years was drawn by him.",
+    "style": "aria"
+  },
+  "template": "classic",
+  "bgm_style": "epic-soaring",
+  "bgm_tags": "epic orchestral, soaring strings, heroic brass, thunderous cinematic drums, triumphant",
+  "lang": "en",
+  "translated": {
+    "from": "emperortaizuofsong.json",
+    "at": "2026-11-15",
+    "by": "opencode/deepseek-v4.1-flash"
+  }
+}

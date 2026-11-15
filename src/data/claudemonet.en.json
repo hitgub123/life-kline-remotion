@@ -1,0 +1,351 @@
+{
+  "subject": {
+    "name": "Claude Monet",
+    "title": "Life Candlestick Chart",
+    "birth_year": 1840,
+    "stock_label": "Impressionism Shares · Ticker 1840",
+    "series": "Life Slices"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "keypoints": [
+    [
+      6,
+      9,
+      null
+    ],
+    [
+      18,
+      8,
+      "Mother dies"
+    ],
+    [
+      27,
+      18,
+      "The Woman in the Green Dress"
+    ],
+    [
+      31,
+      6,
+      "Franco-Prussian War"
+    ],
+    [
+      35,
+      23,
+      "Impression, Sunrise"
+    ],
+    [
+      40,
+      5,
+      "Camille dies of illness"
+    ],
+    [
+      44,
+      14,
+      "Settles in Giverny"
+    ],
+    [
+      51,
+      36,
+      "Buys Giverny"
+    ],
+    [
+      60,
+      48,
+      "Water Lilies"
+    ],
+    [
+      72,
+      18,
+      "Alice dies"
+    ],
+    [
+      75,
+      14,
+      "Eldest son dies"
+    ],
+    [
+      84,
+      18,
+      "Cataracts"
+    ],
+    [
+      87,
+      28,
+      "Dies in Giverny"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 24,
+      "vol": 0.07,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Boy sells charcoal sketches,",
+            0
+          ]
+        ],
+        [
+          [
+            "mother dies early.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s2",
+      "dur": 6,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 20,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Studies painting in Paris,",
+            0
+          ],
+          [
+            "The Green Dress brings fame.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s3",
+      "dur": 6,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 24,
+      "vol": 0.16,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Franco-Prussian War,",
+            1
+          ],
+          [
+            "flees to London.",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s4",
+      "dur": 6,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 22,
+      "vol": 0.14,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "A single Impression, Sunrise,",
+            0
+          ],
+          [
+            "mocked into a movement.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s5",
+      "dur": 6,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 26,
+      "vol": 0.18,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Paintings won't sell,",
+            0
+          ]
+        ],
+        [
+          [
+            "beloved wife dies.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s6",
+      "dur": 6.5,
+      "kp": [
+        5,
+        7
+      ],
+      "candles": 18,
+      "vol": 0.12,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "After his wife dies,",
+            1
+          ]
+        ],
+        [
+          [
+            "he buys the garden.",
+            0
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s7",
+      "dur": 6.5,
+      "kp": [
+        7,
+        8
+      ],
+      "candles": 30,
+      "vol": 0.08,
+      "shape": 1.7,
+      "headline": [
+        [
+          [
+            "Water Lilies enter the canvas,",
+            0
+          ],
+          [
+            "his value peaks.",
+            1
+          ]
+        ]
+      ],
+      "quote": "My garden is my most beautiful masterpiece"
+    },
+    {
+      "id": "s8",
+      "dur": 7,
+      "kp": [
+        8,
+        11
+      ],
+      "candles": 26,
+      "vol": 0.13,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Late-life losses,",
+            1
+          ],
+          [
+            "eyesight dims.",
+            0
+          ]
+        ]
+      ],
+      "quote": "Color is my day-long obsession, joy and torment"
+    },
+    {
+      "id": "s9",
+      "dur": 6,
+      "kp": [
+        11,
+        12
+      ],
+      "candles": 14,
+      "vol": 0.1,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "He keeps painting,",
+            0
+          ]
+        ],
+        [
+          [
+            "dies at Giverny.",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "stamp": true
+    },
+    {
+      "id": "s10",
+      "dur": 6,
+      "kp": [
+        12,
+        12
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "He delists.",
+            0
+          ]
+        ],
+        [
+          [
+            "His work,",
+            0
+          ],
+          [
+            "rises for a century.",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "rocket": true
+    }
+  ],
+  "voice": {
+    "intro": "Claude Monet, repainting the world with light.",
+    "outro": "He spent his life chasing light; poverty and losing his wife never stopped his brush. As his eyesight failed in old age, he still painted Giverny's water lilies into eternity. The market prices works, but time makes room only for true light.",
+    "style": "aria"
+  },
+  "template": "classic",
+  "bgm_style": "hisaishi-style",
+  "bgm_tags": "Joe Hisaishi style orchestral, lyrical piano arpeggios, warm strings and woodwinds, nostalgic wonder",
+  "lang": "en",
+  "translated": {
+    "from": "claudemonet.json",
+    "at": "2026-11-15",
+    "by": "opencode/deepseek-v4.1-flash"
+  }
+}

@@ -1,0 +1,381 @@
+{
+  "subject": {
+    "name": "Zhang Yimou",
+    "title": "Life Candlestick Chart",
+    "birth_year": 1950,
+    "stock_label": "Master of Light & Shadow · Ticker 1950",
+    "series": "Slices of Life"
+  },
+  "hook_dur": 3.5,
+  "seed": 42,
+  "bpm": 120,
+  "template": "classic",
+  "bgm_style": "cinematic-piano",
+  "voice": {
+    "intro": "From a textile mill worker to the director of both Olympic Games, witness Zhang Yimou's extraordinary life.",
+    "outro": "He broke boundaries with blazing colors and forged souls with grand narratives. Weathering historical storms and fierce controversies, sprinting on set well into his seventies, he has carved his life into the growth rings of Chinese cinema.",
+    "style": "aria"
+  },
+  "keypoints": [
+    [
+      19,
+      8,
+      null
+    ],
+    [
+      29,
+      13,
+      "Admitted to BFA"
+    ],
+    [
+      38,
+      22,
+      "Tokyo Best Actor"
+    ],
+    [
+      39,
+      33,
+      "Berlin Golden Bear"
+    ],
+    [
+      43,
+      38,
+      "Venice Golden Lion"
+    ],
+    [
+      53,
+      43,
+      "Blockbuster Era"
+    ],
+    [
+      59,
+      49,
+      "Olympic Zenith"
+    ],
+    [
+      64,
+      25,
+      "Policy Scandal"
+    ],
+    [
+      73,
+      46,
+      "Dual-Olympic Maestro"
+    ],
+    [
+      75,
+      48,
+      "Lifetime Legacy"
+    ]
+  ],
+  "segments": [
+    {
+      "id": "s1",
+      "dur": 6.5,
+      "kp": [
+        0,
+        1
+      ],
+      "candles": 20,
+      "vol": 0.08,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "Ten years a factory hand,",
+            0
+          ]
+        ],
+        [
+          [
+            "Admitted past the age limit",
+            0
+          ],
+          [
+            "to film school.",
+            1
+          ]
+        ]
+      ],
+      "quote": "I am, in truth, merely a craftsman."
+    },
+    {
+      "id": "s2",
+      "dur": 6.5,
+      "kp": [
+        1,
+        2
+      ],
+      "candles": 18,
+      "vol": 0.1,
+      "shape": 1.1,
+      "headline": [
+        [
+          [
+            "Behind the camera,",
+            0
+          ]
+        ],
+        [
+          [
+            "An accidental turn leads",
+            0
+          ],
+          [
+            "to Best Actor.",
+            1
+          ]
+        ]
+      ],
+      "quote": "In this life, mastering just one thing is hard enough."
+    },
+    {
+      "id": "s3",
+      "dur": 6.5,
+      "kp": [
+        2,
+        3
+      ],
+      "candles": 16,
+      "vol": 0.15,
+      "shape": 1.6,
+      "headline": [
+        [
+          [
+            "First time directing,",
+            0
+          ]
+        ],
+        [
+          [
+            "Red Sorghum claims",
+            0
+          ],
+          [
+            "the Berlin Golden Bear.",
+            1
+          ]
+        ]
+      ],
+      "quote": "Cinema is my life."
+    },
+    {
+      "id": "s4",
+      "dur": 6.5,
+      "kp": [
+        3,
+        4
+      ],
+      "candles": 18,
+      "vol": 0.11,
+      "shape": 1.2,
+      "headline": [
+        [
+          [
+            "A neo-realist shift,",
+            0
+          ]
+        ],
+        [
+          [
+            "Sweeping Europe with",
+            0
+          ],
+          [
+            "twin Golden Lions.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s5",
+      "dur": 6.5,
+      "kp": [
+        4,
+        5
+      ],
+      "candles": 22,
+      "vol": 0.12,
+      "shape": 1.3,
+      "headline": [
+        [
+          [
+            "One film, Hero,",
+            0
+          ]
+        ],
+        [
+          [
+            "Ignites",
+            0
+          ],
+          [
+            "the Chinese blockbuster era.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s6",
+      "dur": 7,
+      "kp": [
+        5,
+        6
+      ],
+      "candles": 24,
+      "vol": 0.1,
+      "shape": 1.7,
+      "headline": [
+        [
+          [
+            "Bird's Nest, 2008,",
+            0
+          ]
+        ],
+        [
+          [
+            "A scroll of living art",
+            0
+          ],
+          [
+            "awes the world.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s7",
+      "dur": 6.5,
+      "kp": [
+        6,
+        7
+      ],
+      "candles": 16,
+      "vol": 0.16,
+      "shape": 0.8,
+      "headline": [
+        [
+          [
+            "Partners part ways,",
+            0
+          ]
+        ],
+        [
+          [
+            "Engulfed in controversy,",
+            0
+          ],
+          [
+            "plunging into the trough.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s8",
+      "dur": 6.5,
+      "kp": [
+        7,
+        8
+      ],
+      "candles": 20,
+      "vol": 0.13,
+      "shape": 1.4,
+      "headline": [
+        [
+          [
+            "Commanding the Winter Games,",
+            0
+          ]
+        ],
+        [
+          [
+            "Crowned the world's first",
+            0
+          ],
+          [
+            "Dual-Olympic Director.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s9",
+      "dur": 6.5,
+      "kp": [
+        8,
+        9
+      ],
+      "candles": 18,
+      "vol": 0.1,
+      "shape": 1.1,
+      "headline": [
+        [
+          [
+            "Past seventy,",
+            0
+          ]
+        ],
+        [
+          [
+            "Prolific and dominant,",
+            0
+          ],
+          [
+            "evergreen at the box office.",
+            1
+          ]
+        ]
+      ],
+      "quote": null
+    },
+    {
+      "id": "s10",
+      "dur": 6.5,
+      "kp": [
+        9,
+        9
+      ],
+      "candles": 0,
+      "vol": 0,
+      "shape": 1,
+      "headline": [
+        [
+          [
+            "The light never fades,",
+            0
+          ]
+        ],
+        [
+          [
+            "A craftsman",
+            0
+          ],
+          [
+            "still sprinting on set.",
+            1
+          ]
+        ]
+      ],
+      "quote": null,
+      "rocket": true
+    }
+  ],
+  "bgm_tags": "cinematic piano and strings, emotional, gentle build to a moving climax",
+  "lang": "en",
+  "translated": {
+    "from": "zhangyimou.json",
+    "at": "2026-11-15",
+    "by": "gemini/gemini-3.8-flash"
+  }
+}
