@@ -45,6 +45,46 @@
       "qid": "Q173540",
       "source": "生日",
       "tier": "高成·热度降级"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "張藝謀",
+      "id": "ZhangYimou",
+      "qid": "Q55430",
+      "source": "生日",
+      "tier": "高成"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "克劳德·莫奈",
+      "id": "ClaudeMonet",
+      "qid": "Q296",
+      "source": "生日",
+      "tier": "高成"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "張藝謀",
+      "id": "ZhangYimou",
+      "qid": "Q55430",
+      "source": "生日",
+      "tier": "高成"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "光绪帝",
+      "id": "GuangxuEmperor",
+      "qid": "Q299710",
+      "source": "忌日",
+      "tier": "高成"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "宋太祖",
+      "id": "EmperorTaizuOfSong",
+      "qid": "Q7471",
+      "source": "忌日",
+      "tier": "高成"
     }
   ]
 }
