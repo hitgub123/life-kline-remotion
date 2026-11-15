@@ -372,8 +372,8 @@
   "factcheck": {
     "by": "opencode/deepseek-v4.1-flash",
     "at": "2026-11-15",
-    "verdict": "issues",
-    "issues": 3,
+    "verdict": "pass",
+    "issues": 0,
     "source": "src/data/people/guangxuemperor.md"
   }
 }

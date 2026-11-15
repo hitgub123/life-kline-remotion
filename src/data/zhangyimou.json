@@ -376,7 +376,7 @@
     "by": "opencode/deepseek-v4.1-flash",
     "at": "2026-11-15",
     "verdict": "issues",
-    "issues": 11,
+    "issues": 1,
     "source": "src/data/people/zhangyimou.md"
   }
 }
