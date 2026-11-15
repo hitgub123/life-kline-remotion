@@ -217,6 +217,8 @@ BGM 会自动循环铺满全片、结尾 2 秒淡出。音量默认 0.6，可用
 
 脚本里写 `voice: { intro, outro }`（生成器会自动写，intro 不超 24 字，outro 40-70 字），然后：
 
+> 重跑 produce 时配音会自动比对内容：make-voice 生成时在 wav 旁写 `.meta.json`（头尾文案/音色/总时长），脚本这三样任一变了（改文案、换音色、段时长变了、或事实核查改了 outro），旧配音自动作废重录，**不用手动删 wav**；三样没变则复用旧配音。存量旧配音没有 meta，第一次重跑会重录一次，之后就准了。
+
 ```bash
 node tools/make-voice.mjs src/data/newton.json --video out/newton.mp4
 node tools/mix-audio.mjs out/newton.mp4 --bgm ~/音乐/曲库/某首.mp3 --voice out/voice.wav
