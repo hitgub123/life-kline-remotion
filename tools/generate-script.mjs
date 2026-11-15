@@ -99,7 +99,9 @@ ${VOICE_STYLE_LINES}
 
 BGM 风格清单：
 ${BGM_STYLE_LINES}
-- 去世那一段加 "stamp": true；最后一段加 "rocket": true 且 candles 为 0。
+- 结尾先定「结局型」，只能从五型里选一型，必须有传记依据，不许默认升华：①长涨型——身后声望有实据地持续增值（作品入典成为经典、创立学科或流派、作品传播或拍卖纪录、所创事业或王朝身后延续百年以上），只有这型可以在最后一段加 "rocket": true（且 candles 为 0），且标题或 outro 必须写出实据本身（入选课本、定律沿用至今、拍卖天价、王朝三百年这类具体事实），不许只喊「涨了N年」；②平盘型（默认）——身后逐渐淡出公众记忆、只剩专业圈层还记得，最后一段走平收束，无 rocket；③未竟型——壮志未酬、抱憾而终（被囚、被废、临终仍在抗争），末点即终点、叹息收尾，无 rocket；④争议型——身后评价至今两极、未有定论，以争议本身收尾，无 rocket；⑤身败名裂型——身后名声扫地、名字成反面教材，停在谷底，无 rocket。
+- 去世那一段加 "stamp": true。在世人物一律不得用「退市」字样、不得加 stamp、不得加 rocket——故事未完，用现在时收尾。
+- 禁止把「他退市了。X，涨了N年」当作默认收尾句式；即使长涨型也要换说法、给实据。
 
 只输出 JSON 本体，不要解释，不要 markdown 代码块。
 
@@ -250,7 +252,9 @@ function validate(d) {
         errors.push(`第 ${i + 1} 段 kp 与上一段没有首尾相接`);
     const last = d.segments[d.segments.length - 1];
     if (last.kp[1] !== d.keypoints.length - 1) errors.push("最后一段 kp 终点不是最后一个关键点");
-    if (!last.rocket) warns.push("最后一段没有 rocket: true");
+    const lastHeadlineText = (last.headline || []).flat(1).map((r) => r[0]).join("");
+    if (/涨了/.test(lastHeadlineText))
+      warns.push("最后一段标题疑似「涨了N年」套路句式：确认结局型为长涨型且身后增值有实据，非默认升华");
     if (!d.segments.some((s) => s.stamp)) warns.push("没有带 stamp 的段（去世段应有退市印章）");
     for (const s of d.segments) {
       if ((s.dur * 2) % 1 !== 0) warns.push(`段 ${s.id} 的 dur ${s.dur} 不是 0.5 的整数倍，段界会脱离拍点网格`);
