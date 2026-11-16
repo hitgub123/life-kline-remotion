@@ -373,7 +373,7 @@
   "bgm_tags": "cinematic piano and strings, emotional, gentle build to a moving climax",
   "factcheck": {
     "by": "opencode/deepseek-v4.1-flash",
-    "at": "2026-11-15",
+    "at": "2026-11-16",
     "verdict": "issues",
     "issues": 1,
     "source": "src/data/people/zhangyimou.md"
