@@ -374,8 +374,8 @@
   "factcheck": {
     "by": "opencode/deepseek-v4.1-flash",
     "at": "2026-11-16",
-    "verdict": "issues",
-    "issues": 1,
+    "verdict": "pass",
+    "issues": 0,
     "source": "src/data/people/zhangyimou.md"
   }
 }
