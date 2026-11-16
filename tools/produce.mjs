@@ -108,6 +108,28 @@ function compIdFor(baseFile) {
   return null;
 }
 
+// 配音新鲜度：make-voice 生成时在 wav 旁写 <name>.meta.json（头尾文案/音色/总时长）。
+// 三者任一与当前脚本不符，旧配音即过期、必须重录；无 meta 的旧配音一律视为过期
+// （重录一次后即有 meta）。事实核查每次运行都会重写脚本文件，故不能用文件时间判断，只能比内容。
+function voiceFresh(scriptObj, voicePath) {
+  if (!scriptObj || !existsSync(voicePath)) return false;
+  const metaPath = voicePath.replace(/\.wav$/, ".meta.json");
+  if (!existsSync(metaPath)) return false;
+  try {
+    const meta = JSON.parse(readFileSync(metaPath, "utf8"));
+    const total =
+      (scriptObj.hook_dur || 0) + (scriptObj.segments || []).reduce((s, x) => s + x.dur, 0);
+    return (
+      meta.intro === (scriptObj.voice?.intro ?? null) &&
+      meta.outro === (scriptObj.voice?.outro ?? null) &&
+      meta.style === (scriptObj.voice?.style ?? null) &&
+      Math.abs((meta.total || 0) - total) < 0.6
+    );
+  } catch {
+    return false;
+  }
+}
+
 // --dry-run：只打印中文主流程 + 各语言将执行的步骤计划，不真跑（无 API/无音频环境验线用）
 if (dryRun) {
   const plan = (cond) => (cond ? "跳过（已完成/最新）" : "执行");
@@ -116,7 +138,13 @@ if (dryRun) {
   console.log(`  中文 2/6 生成：${plan(existsSync(scriptPath) && !force)} → ${scriptRel}`);
   console.log(`  中文 3/6 事实核查：${skipReview ? "跳过（--skip-review）" : "执行（失败不拦生产）"}`);
   console.log(`  中文 4/6 渲染：${plan(existsSync(videoPath) && !force)} → out/${base}.mp4（Composition ${id}）`);
-  console.log(`  中文 5/6 配音：${skipVoice ? "跳过（--skip-voice）" : plan(existsSync(voicePath) && !force)} → out/${base}-voice.wav`);
+  let zhVoiceFresh = false;
+  try {
+    zhVoiceFresh =
+      existsSync(voicePath) &&
+      voiceFresh(JSON.parse(readFileSync(scriptPath, "utf8")), voicePath);
+  } catch {}
+  console.log(`  中文 5/6 配音：${skipVoice ? "跳过（--skip-voice）" : plan(zhVoiceFresh && !force)} → out/${base}-voice.wav`);
   console.log(`  中文 6/6 合成：${bgm ? `手动 BGM ${bgm}` : "自动选曲（与语言版共用同一首）"} → out/${base}-final.mp4`);
   for (const lang of langs) {
     const meta = LANG_META[lang];
@@ -192,8 +220,11 @@ if (!existsSync(videoPath) || force || stale) {
   await run("4/6 渲染视频", "npx", ["remotion", "render", id, `out/${base}.mp4`], { shell: process.platform === "win32" });
 } else console.log("=== 4/6 渲染：成片已是最新，跳过 ===");
 
-// 5 配音
-let voiceMade = existsSync(voicePath) && !force;
+// 5 配音（脚本头尾文案/音色/总时长变了、或旧配音无 meta → 自动重录，不必手动删文件）
+const scriptObj = JSON.parse(readFileSync(scriptPath, "utf8"));
+let voiceMade = existsSync(voicePath) && !force && voiceFresh(scriptObj, voicePath);
+if (!skipVoice && !voiceMade && existsSync(voicePath) && !force)
+  console.log("=== 5/6 配音：旧配音已过期（文案/音色/总时长有变或无元数据），重新生成 ===");
 if (!skipVoice && !voiceMade)
   voiceMade = await tryRun("5/6 生成头尾配音", "node", [
     "tools/make-voice.mjs", scriptRel, "--video", `out/${base}.mp4`, "--out", `out/${base}-voice.wav`,
@@ -258,8 +289,14 @@ async function produceLang(lang) {
   if (!existsSync(lVideoPath) || force || lStale)
     await run(`多语言·${tag} 2/4 渲染（${compId}）`, "npx", ["remotion", "render", compId, `out/${base}-${lang}.mp4`], { shell: process.platform === "win32" });
   else console.log(`=== 多语言·${tag} 2/4 渲染：成片已是最新，跳过 ===`);
-  // 3 配音（音色由译本脚本 voice.style 决定：ja=nanami / en=aria）
-  let lVoiceMade = existsSync(lVoicePath) && !force;
+  // 3 配音（音色由译本脚本 voice.style 决定：ja=nanami / en=aria；文案/音色/总时长变了自动重录）
+  let lScriptObj = null;
+  try {
+    lScriptObj = JSON.parse(readFileSync(lScriptPath, "utf8"));
+  } catch {}
+  let lVoiceMade = existsSync(lVoicePath) && !force && voiceFresh(lScriptObj, lVoicePath);
+  if (!skipVoice && !lVoiceMade && existsSync(lVoicePath) && !force)
+    console.log(`=== 多语言·${tag} 3/4 配音：旧配音已过期，重新生成 ===`);
   if (!skipVoice && !lVoiceMade)
     lVoiceMade = await tryRun(`多语言·${tag} 3/4 配音（${meta.voice}）`, "node", [
       "tools/make-voice.mjs", lScriptRel, "--video", `out/${base}-${lang}.mp4`, "--out", `out/${base}-${lang}-voice.wav`,

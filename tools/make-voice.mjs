@@ -185,4 +185,15 @@ execFileSync("ffmpeg", ff, { stdio: "pipe" });
 for (const p of parts)
   console.log(`${p.name}配音: ${p.at.toFixed(1)}s 起, 长 ${p.dur.toFixed(1)}s`);
 console.log("已生成配音轨:", out, `(全长 ${total.toFixed(1)}s)`);
+// 配音元数据：produce 靠它比对内容判断旧配音是否过期（头尾文案/音色/总时长变了自动重录，不看文件时间）
+try {
+  writeFileSync(
+    out.replace(/\.wav$/, ".meta.json"),
+    JSON.stringify(
+      { intro: intro ?? null, outro: outro ?? null, style: script?.voice?.style ?? null, total },
+      null,
+      2
+    ) + "\n"
+  );
+} catch {}
 console.log(`合成: node tools/mix-audio.mjs ${videoPath || "视频.mp4"} --bgm 曲.mp3 --voice ${out}`);
