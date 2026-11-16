@@ -154,11 +154,17 @@ export function buildSeries(data: ScriptData): BuiltSeries {
         const [bAge, bVal, bAnno] = KP[k + 1];
         const n = raw[li];
         const closes = bridge(randn, aVal, bVal, n, seg.vol, seg.shape);
-        closes.forEach((c, j) => {
+        // 限幅（作者裁决 2026-11-16）：本区间蜡烛的收盘与影线不许窜出两端关键点 ±6%。
+        // 关键点是走势的权威，程序噪声不得自造假顶/假底——曾出现冲向关键点 49 的
+        // 途中蜡烛窜到约 55、把「巅峰」衬成下跌的实害。生成在对数空间，故用乘性限幅。
+        const capHi = Math.max(aVal, bVal) * 1.06;
+        const capLo = Math.min(aVal, bVal) * 0.94;
+        closes.forEach((cRaw, j) => {
+          const c = Math.min(capHi, Math.max(capLo, cRaw));
           const o = prevClose;
           const age = aAge + ((bAge - aAge) * (j + 1)) / n;
-          const hi = Math.max(o, c) * (1 + Math.abs(randn() * seg.vol * 0.45));
-          const lo = Math.min(o, c) * (1 - Math.abs(randn() * seg.vol * 0.45));
+          const hi = Math.min(capHi, Math.max(o, c) * (1 + Math.abs(randn() * seg.vol * 0.45)));
+          const lo = Math.max(capLo, Math.min(o, c) * (1 - Math.abs(randn() * seg.vol * 0.45)));
           const chg = (c - o) / o;
           const tag = chg >= 0.17 ? "涨停" : chg <= -0.17 ? "跌停" : null;
           const vol = Math.max(6, 26 + Math.abs(chg) * 620 + randn() * 7);
